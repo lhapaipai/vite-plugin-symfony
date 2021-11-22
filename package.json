@@ -1,0 +1,13 @@
+{
+  "name": "vite-plugin-symfony",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "author": "Lhapaipai",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lhapaipai/vite-plugin-symfony.git"
+  }
+}
