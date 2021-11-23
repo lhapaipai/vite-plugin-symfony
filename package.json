@@ -2,12 +2,30 @@
   "name": "vite-plugin-symfony",
   "version": "0.1.1",
   "description": "",
-  "main": "index.js",
-  "scripts": {},
+  "main": "dist/index.js",
   "author": "Lhapaipai",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/lhapaipai/vite-plugin-symfony.git"
+  },
+  "scripts": {
+    "dev": "tsc --build --watch",
+    "build": "tsc --build"
+  },
+  "files": [
+    "dist/",
+    "src/"
+  ],
+  "devDependencies": {
+    "@types/node": "^16.11.9",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint": "^8.3.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.4.1",
+    "typescript": "^4.5.2",
+    "vite": "^2.6.14"
   }
 }
