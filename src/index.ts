@@ -1,7 +1,7 @@
 import type { Plugin } from "vite";
 
 import { resolve } from "path";
-import { existsSync } from "fs";
+import { existsSync, mkdirSync } from "fs";
 
 import { getDevEntryPoints, getBuildEntryPoints } from "./configResolver";
 import { writeJson, emptyDir } from "./fileHelper";
@@ -41,10 +41,13 @@ export default function (): Plugin {
       entryPointsPath = resolve(config.root, config.build.outDir, "entrypoints.json");
 
       if (config.env.DEV) {
-        if (config.build.manifest) {
-          const buildDir = resolve(config.root, config.build.outDir);
-          existsSync(buildDir) && emptyDir(buildDir);
+        const buildDir = resolve(config.root, config.build.outDir);
+
+        if (!existsSync(buildDir)) {
+          mkdirSync(buildDir, { recursive: true });
         }
+
+        existsSync(buildDir) && emptyDir(buildDir);
 
         const entryPoints = getDevEntryPoints(config);
         writeJson(entryPointsPath, entryPoints);
