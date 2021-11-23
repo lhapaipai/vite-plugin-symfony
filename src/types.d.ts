@@ -1,6 +1,9 @@
 type EntryPointsFile = {
   isProd: boolean;
-  viteServer?: string;
+  viteServer?: {
+    origin: string;
+    base: string;
+  };
   entryPoints: EntryPoints;
 };
 

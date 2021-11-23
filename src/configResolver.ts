@@ -15,7 +15,10 @@ const getDevEntryPoints = (config: ResolvedConfig) => {
   }
   return {
     isProd: false,
-    viteServer: `${origin}${config.base}@vite/client`,
+    viteServer: {
+      origin,
+      base: config.base,
+    },
     entryPoints,
   };
 };

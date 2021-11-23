@@ -4,7 +4,6 @@ A Vite plugin to integrate easily Vite in your Symfony application..
 
 - create a `entrypoints.json` inside your build directory with your js/css/preload dependencies.
 - reload your browser when you update your twig files
-- prebundle your dependencies based on your entry points
 
 This package is intended for use with the Symfony Bundle : [pentatrion/vite-bundle](https://github.com/lhapaipai/vite-bundle).
 ## Installation
@@ -39,12 +38,10 @@ export default defineConfig({
         /* reactRefresh(), // if you're using React */
         symfonyPlugin(),
     ],
-    server: {
-        watch: {
-            disableGlobbing: false,
-        },
-    },
-    root: "assets/",
+
+    root: "./assets/",
+
+    /* your outDir web path prefix */
     base: "/build/",
     build: {
         manifest: true,
@@ -53,22 +50,23 @@ export default defineConfig({
         outDir: "../public/build/",
         rollupOptions: {
             input: {
-              app: "assets/app.ts"
+              app: "./assets/app.ts"
             },
         },
     }
 });
 ```
 
+and your package.json :
 ```json
-// package.json
 {
     "scripts": {
         "dev": "vite",
         "build": "vite build"
     },
     "devDependencies": {
-        "vite": "^2.1.5"
+        "vite": "^2.6",
+        "vite-plugin-symfony": "^0.1.2"
     }
 }
 ```

@@ -1,10 +1,10 @@
 import type { Plugin } from "vite";
 
 import { resolve } from "path";
-import { unlinkSync, existsSync } from "fs";
+import { existsSync } from "fs";
 
 import { getDevEntryPoints, getBuildEntryPoints } from "./configResolver";
-import { writeJson } from "./fileWriter";
+import { writeJson, emptyDir } from "./fileHelper";
 
 let viteConfig = null;
 let entryPointsPath: string;
@@ -17,9 +17,22 @@ export default function (): Plugin {
         console.error("rollupOptions.input must be an Objet like {app: './assets/app.js'}");
         process.exit(1);
       }
+
       return {
-        optimizeDeps: {
-          entries: Object.values(config.build.rollupOptions.input),
+        server: {
+          //Set to true to force dependency pre-bundling.
+          force: true,
+          watch: {
+            // needed if you want to reload dev server with twig
+            disableGlobbing: false,
+          },
+
+          /* you need to authorize Vite to have a build 
+           directory outside your root directory */
+
+          fs: {
+            allow: [".."],
+          },
         },
       };
     },
@@ -29,15 +42,13 @@ export default function (): Plugin {
 
       if (config.env.DEV) {
         if (config.build.manifest) {
-          const buildDir = resolve(config.root, config.build.outDir, "manifest.json");
-          existsSync(buildDir) && unlinkSync(buildDir);
+          const buildDir = resolve(config.root, config.build.outDir);
+          existsSync(buildDir) && emptyDir(buildDir);
         }
 
         const entryPoints = getDevEntryPoints(config);
         writeJson(entryPointsPath, entryPoints);
       }
-
-      console.log("config", config);
     },
     configureServer(devServer) {
       const { watcher, ws } = devServer;
