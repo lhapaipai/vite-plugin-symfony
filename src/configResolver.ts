@@ -72,7 +72,7 @@ const parseInput = (config: ResolvedConfig) => {
   const inputParsed: ParsedInput = {};
 
   for (const [entryName, entryPath] of Object.entries(config.build.rollupOptions.input)) {
-    const entryAbsolutePath = resolve(cwd(), entryPath);
+    const entryAbsolutePath = resolve(cwd(), entryPath).replace(/\\/g, "/");
 
     if (entryAbsolutePath.indexOf(config.root) !== 0) {
       console.error("Entry points must be inside Vite root directory");
