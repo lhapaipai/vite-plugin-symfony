@@ -50,7 +50,7 @@ export default defineConfig({
         outDir: "../public/build/",
         rollupOptions: {
             input: {
-              app: "./assets/app.ts"
+              app: "./app.ts" /* relative to the root option */
             },
         },
     }
@@ -65,11 +65,39 @@ and your package.json :
         "build": "vite build"
     },
     "devDependencies": {
-        "vite": "^2.6",
-        "vite-plugin-symfony": "^0.1.2"
+        "vite": "~2.7",
+        "vite-plugin-symfony": "^0.2.0"
     }
 }
 ```
+
+## Migration from v0.1.x to v0.2.x
+
+There is a small difference in the configuration of the input paths between these 2 versions.
+
+```diff
+// vite.config.js
+
+export default defineConfig({
+
+    root: "./assets/",
+
+    build: {
+        rollupOptions: {
+            input: {
+-              /* vite-plugin-symfony v0.1.x */
+-              app: "./assets/app.ts" /* relative to the Symfony project root */
++              /* vite-plugin-symfony v0.2.x */
++              app: "./app.ts"        /* relative to the vite.config.js root option */
+            },
+        },
+    }
+});
+```
+this issue comes from the fact that :
+- vite-plugin-symfony v0.1.x requires vite v2.6.x
+- vite-plugin-symfony v0.2.x requires vite v2.7.x
+
 
 ## With pentatrion/vite-bundle
 
