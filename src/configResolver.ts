@@ -5,8 +5,11 @@ import type { ResolvedConfig } from "vite";
 const getDevEntryPoints = (config: ResolvedConfig) => {
   const entryPoints: EntryPoints = {};
 
-  const { host = "localhost", port = 3000, https = false } = config.server;
-  const origin = `http${https ? "s" : ""}://${host}:${port}`;
+  let { host = "localhost", port = 3000, https = false, origin = undefined } = config.server;
+  
+  if (origin === undefined || origin === "") {
+    origin = `http${https ? "s" : ""}://${host}:${port}`;
+  }
 
   for (const [entryName, entryPath] of Object.entries(parseInput(config))) {
     entryPoints[entryName] = {
