@@ -36,8 +36,8 @@ export default function (): Plugin {
         },
       };
 
-      if (!config.server.origin) {
-        const { host = "localhost", port = 3000, https = false } = config.server;
+      if (!config.server?.origin) {
+        const { host = "localhost", port = 3000, https = false } = config.server || {};
         extraConfig.server.origin = `http${https ? "s" : ""}://${host}:${port}`;
       }
 
