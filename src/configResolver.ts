@@ -51,7 +51,9 @@ const parseManifestEntry = (entryPath: string, manifest: Manifest, config: Resol
   }
 
   if (manifestEntry.css) {
-    css.push(`${config.base}${manifestEntry.css}`);
+    manifestEntry.css.forEach((cssEntry) => {
+      css.push(`${config.base}${cssEntry}`);
+    });
   }
 
   if (manifestEntry.imports) {
