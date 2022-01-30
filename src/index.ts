@@ -1,4 +1,4 @@
-import type { Plugin } from "vite";
+import type { Plugin, UserConfig } from "vite";
 
 import { resolve } from "path";
 import { existsSync, mkdirSync } from "fs";
@@ -18,7 +18,7 @@ export default function (): Plugin {
         process.exit(1);
       }
 
-      return {
+      const extraConfig: UserConfig = {
         server: {
           //Set to true to force dependency pre-bundling.
           force: true,
@@ -35,6 +35,13 @@ export default function (): Plugin {
           },
         },
       };
+
+      if (!config.server.origin) {
+        const { host = "localhost", port = 3000, https = false } = config.server;
+        extraConfig.server.origin = `http${https ? "s" : ""}://${host}:${port}`;
+      }
+
+      return extraConfig;
     },
     configResolved(config) {
       viteConfig = config;
