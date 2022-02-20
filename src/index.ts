@@ -26,13 +26,6 @@ export default function (): Plugin {
             // needed if you want to reload dev server with twig
             disableGlobbing: false,
           },
-
-          /* you need to authorize Vite to have a build 
-           directory outside your root directory */
-
-          fs: {
-            allow: [".."],
-          },
         },
       };
 

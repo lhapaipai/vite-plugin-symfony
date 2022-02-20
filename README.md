@@ -24,9 +24,60 @@ Create this directory structure :
 ├──vite.config.js
 ```
 
-Vite base config
+Vite base config with vite 2.8
 
 ```js
+// vite.config.js
+import {defineConfig} from "vite";
+import symfonyPlugin from "vite-plugin-symfony";
+/* if you're using React */
+// import reactRefresh from "@vitejs/plugin-react-refresh";
+
+export default defineConfig({
+    plugins: [
+        /* reactRefresh(), // if you're using React */
+        symfonyPlugin(),
+    ],
+
+    root: "./assets/",
+
+    /* your outDir web path prefix */
+    base: "/build/",
+    build: {
+        manifest: true,
+        emptyOutDir: true,
+        assetsDir: "",
+        outDir: "./public/build",
+        rollupOptions: {
+            input: {
+              app: "./assets/app.js" /* relative to the root option */
+            },
+        },
+    }
+});
+```
+
+and your package.json :
+```json
+{
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "vite": "~2.8",
+        "vite-plugin-symfony": "^0.3.0"
+    }
+}
+```
+
+
+## Vitejs previous versions
+
+There is small differences in the configuration of the input paths with vitejs 2.6 and vitejs 2.7.
+
+```js
+// vite 2.7
 // vite.config.js
 import {defineConfig} from "vite";
 import symfonyPlugin from "vite-plugin-symfony";
@@ -57,47 +108,39 @@ export default defineConfig({
 });
 ```
 
-and your package.json :
-```json
-{
-    "scripts": {
-        "dev": "vite",
-        "build": "vite build"
-    },
-    "devDependencies": {
-        "vite": "~2.7",
-        "vite-plugin-symfony": "^0.2.0"
-    }
-}
-```
 
-## Migration from v0.1.x to v0.2.x
 
-There is a small difference in the configuration of the input paths between these 2 versions.
-
-```diff
+```js
+// Vite 2.6
 // vite.config.js
+import {defineConfig} from "vite";
+import symfonyPlugin from "vite-plugin-symfony";
+/* if you're using React */
+// import reactRefresh from "@vitejs/plugin-react-refresh";
 
 export default defineConfig({
+    plugins: [
+        /* reactRefresh(), // if you're using React */
+        symfonyPlugin(),
+    ],
 
     root: "./assets/",
 
+    /* your outDir web path prefix */
+    base: "/build/",
     build: {
+        manifest: true,
+        emptyOutDir: true,
+        assetsDir: "",
+        outDir: "../public/build/",
         rollupOptions: {
             input: {
--              /* vite-plugin-symfony v0.1.x */
--              app: "./assets/app.ts" /* relative to the Symfony project root */
-+              /* vite-plugin-symfony v0.2.x */
-+              app: "./app.ts"        /* relative to the vite.config.js root option */
+              app: "./assets/app.ts" /* relative to the root option */
             },
         },
     }
 });
 ```
-this issue comes from the fact that :
-- vite-plugin-symfony v0.1.x requires vite v2.6.x
-- vite-plugin-symfony v0.2.x requires vite v2.7.x
-
 
 ## With pentatrion/vite-bundle
 

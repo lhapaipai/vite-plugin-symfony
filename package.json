@@ -19,7 +19,7 @@
     "src/"
   ],
   "devDependencies": {
-    "@types/node": "^16.11.9",
+    "@types/node": "^17.0.18",
     "@types/ws": "^8.2.2",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
@@ -28,7 +28,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "prettier": "^2.4.1",
     "typescript": "^4.5.2",
-    "vite": "~2.7"
+    "vite": "~2.8"
   },
   "keywords": [
     "vite-plugin",
@@ -41,6 +41,6 @@
   },
   "homepage": "https://github.com/lhapaipai/vite-plugin-symfony#readme",
   "peerDependencies": {
-    "vite": "~2.7"
+    "vite": "~2.8"
   }
 }
