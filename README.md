@@ -39,7 +39,7 @@ export default defineConfig({
         symfonyPlugin(),
     ],
 
-    root: "./assets/",
+    root: ".",
 
     /* your outDir web path prefix */
     base: "/build/",
