@@ -44,25 +44,35 @@ const parseManifestEntry = (entryPath: string, manifest: Manifest, config: Resol
   const css: string[] = [];
   const preload: string[] = [];
 
+  if (manifestEntry.imports) {
+    for (const importEntryName of manifestEntry.imports) {
+      const { css: importCss, preload: importPreload } = parseManifestEntry(importEntryName, manifest, config);
+
+      for (const dependency of importCss) {
+        if (css.indexOf(dependency) === -1) {
+          css.push(dependency);
+        }
+      }
+      for (const dependency of importPreload) {
+        if (preload.indexOf(dependency) === -1) {
+          preload.push(dependency);
+        }
+      }
+    }
+  }
+
   if (manifestEntry.isEntry) {
     js.push(`${config.base}${manifestEntry.file}`);
-  } else {
+  } else if (preload.indexOf(`${config.base}${manifestEntry.file}`) === -1) {
     preload.push(`${config.base}${manifestEntry.file}`);
   }
 
   if (manifestEntry.css) {
     manifestEntry.css.forEach((cssEntry) => {
-      css.push(`${config.base}${cssEntry}`);
+      if (css.indexOf(`${config.base}${cssEntry}`) === -1) {
+        css.push(`${config.base}${cssEntry}`);
+      }
     });
-  }
-
-  if (manifestEntry.imports) {
-    for (const importEntryName of manifestEntry.imports) {
-      const { css: importCss, preload: importPreload } = parseManifestEntry(importEntryName, manifest, config);
-
-      css.push(...importCss);
-      preload.push(...importPreload);
-    }
   }
 
   return { js, css, preload };
