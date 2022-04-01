@@ -13,7 +13,7 @@ const writeJson = (filePath: string, jsonData: EntryPointsFile) => {
 const emptyDir = (dir: string) => {
   const files = readdirSync(dir);
   for (const file of files) {
-    rmSync(join(dir, file), {});
+    rmSync(join(dir, file), { recursive: true });
   }
 };
 
