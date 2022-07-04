@@ -24,7 +24,7 @@ Create this directory structure :
 ├──vite.config.js
 ```
 
-Vite base config with vite 2.8
+Vite base config with vite 2.8/2.9
 
 ```js
 // vite.config.js
@@ -43,6 +43,11 @@ export default defineConfig({
 
     /* your outDir web path prefix */
     base: "/build/",
+
+    /* By default, Vite will copy all assets in /public to the build directory. */
+    /* no longer needed because your web server already does it */
+    publicDir: false,
+
     build: {
         manifest: true,
         emptyOutDir: true,
@@ -65,7 +70,7 @@ and your package.json :
         "build": "vite build"
     },
     "devDependencies": {
-        "vite": "~2.8",
+        "vite": "~2.9",
         "vite-plugin-symfony": "^0.3.0"
     }
 }
