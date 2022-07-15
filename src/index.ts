@@ -4,10 +4,11 @@ import { resolve } from "path";
 import { existsSync, mkdirSync } from "fs";
 
 import { getDevEntryPoints, getBuildEntryPoints } from "./configResolver";
+import { getAssets } from "./assetsResolver";
 import { writeJson, emptyDir } from "./fileHelper";
 
 let viteConfig = null;
-let entryPointsPath: string;
+let entryPointsPath: string, assetsPath: string;
 
 export default function (): Plugin {
   return {
@@ -43,6 +44,7 @@ export default function (): Plugin {
     configResolved(config) {
       viteConfig = config;
       entryPointsPath = resolve(config.root, config.build.outDir, "entrypoints.json");
+      assetsPath = resolve(config.root, config.build.outDir, "assets.json");
 
       if (config.env.DEV) {
         const buildDir = resolve(config.root, config.build.outDir);
@@ -76,8 +78,10 @@ export default function (): Plugin {
 
       const manifest = JSON.parse(bundles["manifest.json"].source.toString());
       const entryPoints = getBuildEntryPoints(viteConfig, manifest);
-
       writeJson(entryPointsPath, entryPoints);
+
+      const assets = getAssets(viteConfig, bundles);
+      writeJson(assetsPath, assets);
     },
   };
 }
