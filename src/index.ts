@@ -20,17 +20,21 @@ export default function (): Plugin {
 
       const extraConfig: UserConfig = {
         server: {
-          //Set to true to force dependency pre-bundling.
-          force: true,
           watch: {
             // needed if you want to reload dev server with twig
             disableGlobbing: false,
           },
+          strictPort: true,
+        },
+
+        optimizeDeps: {
+          //Set to true to force dependency pre-bundling.
+          force: true,
         },
       };
 
       if (!config.server?.origin) {
-        const { host = "localhost", port = 3000, https = false } = config.server || {};
+        const { host = "localhost", port = 5173, https = false } = config.server || {};
         extraConfig.server.origin = `http${https ? "s" : ""}://${host}:${port}`;
       }
 
