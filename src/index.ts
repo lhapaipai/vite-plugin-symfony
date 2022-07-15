@@ -56,7 +56,15 @@ export default function (): Plugin {
         existsSync(buildDir) && emptyDir(buildDir);
 
         const entryPoints = getDevEntryPoints(config);
-        writeJson(entryPointsPath, entryPoints);
+        writeJson(entryPointsPath, {
+          isProd: false,
+          viteServer: {
+            origin: config.server.origin,
+            base: config.base,
+          },
+          entryPoints,
+          assets: null,
+        });
       }
     },
     configureServer(devServer) {
@@ -78,10 +86,14 @@ export default function (): Plugin {
 
       const manifest = JSON.parse(bundles["manifest.json"].source.toString());
       const entryPoints = getBuildEntryPoints(viteConfig, manifest);
-      writeJson(entryPointsPath, entryPoints);
-
       const assets = getAssets(viteConfig, bundles);
-      writeJson(assetsPath, assets);
+
+      writeJson(entryPointsPath, {
+        isProd: true,
+        viteServer: null,
+        entryPoints,
+        assets,
+      });
     },
   };
 }

@@ -11,14 +11,7 @@ const getDevEntryPoints = (config: ResolvedConfig) => {
       js: [`${origin}${config.base}${entryPath}`],
     };
   }
-  return {
-    isProd: false,
-    viteServer: {
-      origin,
-      base: config.base,
-    },
-    entryPoints,
-  };
+  return entryPoints;
 };
 
 const getBuildEntryPoints = (config: ResolvedConfig, manifest: Manifest) => {
@@ -28,10 +21,7 @@ const getBuildEntryPoints = (config: ResolvedConfig, manifest: Manifest) => {
     entryPoints[entryName] = parseManifestEntry(entryPath, manifest, config);
   }
 
-  return {
-    isProd: true,
-    entryPoints,
-  };
+  return entryPoints;
 };
 
 const parseManifestEntry = (entryPath: string, manifest: Manifest, config: ResolvedConfig) => {
