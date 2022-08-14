@@ -44,7 +44,6 @@ export default function (): Plugin {
     configResolved(config) {
       viteConfig = config;
       entryPointsPath = resolve(config.root, config.build.outDir, "entrypoints.json");
-      assetsPath = resolve(config.root, config.build.outDir, "assets.json");
 
       if (config.env.DEV) {
         const buildDir = resolve(config.root, config.build.outDir);

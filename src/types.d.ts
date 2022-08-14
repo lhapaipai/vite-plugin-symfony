@@ -8,7 +8,7 @@ type EntryPointsFile = {
 };
 
 type EntryPoint = {
-  js: string[];
+  js?: string[];
   css?: string[];
   preload?: string[];
 };
@@ -17,7 +17,12 @@ type EntryPoints = {
 };
 
 type ParsedInput = {
-  [k: string]: string;
+  [k: string]: ParsedEntry;
+};
+
+type ParsedEntry = {
+  entryType: "js" | "css";
+  entryPath: string;
 };
 
 type ManifestEntry = {
