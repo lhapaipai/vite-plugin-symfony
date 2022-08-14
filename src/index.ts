@@ -89,7 +89,7 @@ export default function (): Plugin {
 
       writeJson(entryPointsPath, {
         isProd: true,
-        viteServer: null,
+        viteServer: false,
         entryPoints,
         assets,
       });
