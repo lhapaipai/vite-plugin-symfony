@@ -45,5 +45,8 @@
   },
   "volta": {
     "node": "16.16.0"
+  },
+  "dependencies": {
+    "sirv": "^2.0.2"
   }
 }

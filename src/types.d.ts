@@ -37,3 +37,7 @@ type ManifestEntry = {
 type Manifest = {
   [k: string]: ManifestEntry;
 };
+
+type PluginOptions = {
+  servePublic?: boolean;
+};

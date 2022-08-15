@@ -1,4 +1,5 @@
 import type { Plugin, UserConfig } from "vite";
+import sirv from "sirv";
 
 import { resolve } from "path";
 import { existsSync, mkdirSync } from "fs";
@@ -7,10 +8,22 @@ import { getDevEntryPoints, getBuildEntryPoints } from "./configResolver";
 import { getAssets } from "./assetsResolver";
 import { writeJson, emptyDir } from "./fileHelper";
 
-let viteConfig = null;
-let entryPointsPath: string, assetsPath: string;
+/* not imported from vite because we don't want vite in package.json dependancy */
+const FS_PREFIX = `/@fs/`;
+const VALID_ID_PREFIX = `/@id/`;
+const CLIENT_PUBLIC_PATH = `/@vite/client`;
+const ENV_PUBLIC_PATH = `/@vite/env`;
 
-export default function (): Plugin {
+const importQueryRE = /(\?|&)import=?(?:&|$)/;
+const internalPrefixes = [FS_PREFIX, VALID_ID_PREFIX, CLIENT_PUBLIC_PATH, ENV_PUBLIC_PATH];
+const InternalPrefixRE = new RegExp(`^(?:${internalPrefixes.join("|")})`);
+const isImportRequest = (url: string): boolean => importQueryRE.test(url);
+const isInternalRequest = (url: string): boolean => InternalPrefixRE.test(url);
+
+let viteConfig = null;
+let entryPointsPath: string;
+
+export default function (options: PluginOptions = {}): Plugin {
   return {
     name: "symfony",
     config(config) {
@@ -76,6 +89,33 @@ export default function (): Plugin {
           });
         }
       });
+
+      if (options.servePublic !== false) {
+        const serve = sirv("public", {
+          dev: true,
+          etag: true,
+          extensions: [],
+          setHeaders(res, pathname) {
+            // Matches js, jsx, ts, tsx.
+            // The reason this is done, is that the .ts file extension is reserved
+            // for the MIME type video/mp2t. In almost all cases, we can expect
+            // these files to be TypeScript files, and for Vite to serve them with
+            // this Content-Type.
+            if (/\.[tj]sx?$/.test(pathname)) {
+              res.setHeader("Content-Type", "application/javascript");
+            }
+
+            res.setHeader("Access-Control-Allow-Origin", "*");
+          },
+        });
+        devServer.middlewares.use(function viteServePublicMiddleware(req, res, next) {
+          // skip import request and internal requests `/@fs/ /@vite-client` etc...
+          if (isImportRequest(req.url!) || isInternalRequest(req.url!)) {
+            return next();
+          }
+          serve(req, res, next);
+        });
+      }
     },
     writeBundle(options, bundles) {
       if (!bundles["manifest.json"] || bundles["manifest.json"].type !== "asset") {

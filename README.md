@@ -36,7 +36,9 @@ import symfonyPlugin from "vite-plugin-symfony";
 export default defineConfig({
     plugins: [
         /* reactRefresh(), // if you're using React */
-        symfonyPlugin(),
+        symfonyPlugin({
+            servePublic: true /* defaultValue */
+        }),
     ],
 
     root: ".",
