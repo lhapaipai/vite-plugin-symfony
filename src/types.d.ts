@@ -39,5 +39,32 @@ type Manifest = {
 };
 
 type PluginOptions = {
+  /**
+   * Serve your assets which are defined in your public directory
+   * @default true
+   */
   servePublic?: boolean;
+
+  /**
+   * Symfony's public directory
+   * @default 'public'
+   */
+  publicDirectory?: string;
+
+  /**
+   * The build directory relative to publicDirectory where compiled assets should be written
+   * @default 'build'
+   */
+  buildDirectory?: string;
+
+  /**
+   * Configuration for performing full page refresh on file changes
+   */
+  refresh?: boolean | string[];
+
+  /**
+   * Show vite resolved config
+   * @default false
+   */
+  verbose?: boolean;
 };

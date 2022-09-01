@@ -1,12 +1,14 @@
-import type { Plugin, UserConfig } from "vite";
+import { Plugin, UserConfig, ResolvedConfig, ViteDevServer } from "vite";
 import sirv from "sirv";
 
-import { resolve } from "path";
-import { existsSync, mkdirSync } from "fs";
+import { resolve, join } from "path";
+import { existsSync, mkdirSync, readFileSync } from "fs";
 
 import { getDevEntryPoints, getBuildEntryPoints } from "./configResolver";
 import { getAssets } from "./assetsResolver";
 import { writeJson, emptyDir } from "./fileHelper";
+
+import colors from "picocolors";
 
 /* not imported from vite because we don't want vite in package.json dependancy */
 const FS_PREFIX = `/@fs/`;
@@ -20,19 +22,95 @@ const InternalPrefixRE = new RegExp(`^(?:${internalPrefixes.join("|")})`);
 const isImportRequest = (url: string): boolean => importQueryRE.test(url);
 const isInternalRequest = (url: string): boolean => InternalPrefixRE.test(url);
 
-let viteConfig = null;
-let entryPointsPath: string;
+export const refreshPaths = ["templates/**/*.twig"];
 
-export default function (options: PluginOptions = {}): Plugin {
+function resolveBase(config: Required<PluginOptions>): string {
+  return "/" + config.buildDirectory + "/";
+}
+
+function resolveOutDir(config: Required<PluginOptions>): string {
+  return join(config.publicDirectory, config.buildDirectory);
+}
+
+function resolvePluginOptions(userConfig: PluginOptions = {}): Required<PluginOptions> {
+  if (typeof userConfig.publicDirectory === "string") {
+    userConfig.publicDirectory = userConfig.publicDirectory.trim().replace(/^\/+/, "");
+
+    if (userConfig.publicDirectory === "") {
+      throw new Error("vite-plugin-symfony: publicDirectory must be a subdirectory. E.g. 'public'.");
+    }
+  }
+
+  if (typeof userConfig.buildDirectory === "string") {
+    userConfig.buildDirectory = userConfig.buildDirectory.trim().replace(/^\/+/, "").replace(/\/+$/, "");
+
+    if (userConfig.buildDirectory === "") {
+      throw new Error("vite-plugin-symfony: buildDirectory must be a subdirectory. E.g. 'build'.");
+    }
+  }
+
+  if (userConfig.servePublic !== false) {
+    userConfig.servePublic = true;
+  }
+
+  return {
+    servePublic: userConfig.servePublic,
+    publicDirectory: userConfig.publicDirectory ?? "public",
+    buildDirectory: userConfig.buildDirectory ?? "build",
+    refresh: userConfig.refresh ?? false,
+    verbose: userConfig.verbose === true ?? false,
+  };
+}
+
+function logConfig(config: any, server: ViteDevServer, depth: number) {
+  Object.entries(config).map(([key, value]) => {
+    const prefix = " ".repeat(depth);
+    const keySpaces = prefix + colors.dim(key) + " ".repeat(30 - key.length - prefix.length);
+    if (
+      typeof value === "undefined" ||
+      typeof value === "boolean" ||
+      typeof value === "number" ||
+      typeof value === "bigint"
+    ) {
+      server.config.logger.info(`${keySpaces}: ${value ? colors.green(value.toString()) : value}`);
+    } else if (typeof value === "string") {
+      server.config.logger.info(`${keySpaces}: ${value ? colors.green('"' + value.toString() + '"') : value}`);
+    } else if (typeof value === "symbol") {
+      server.config.logger.info(`${keySpaces}: symbol`);
+    } else if (typeof value === "function") {
+      server.config.logger.info(`${keySpaces}: function`);
+    } else if (value === null) {
+      server.config.logger.info(`${keySpaces}: null`);
+    } else if (typeof value === "object") {
+      server.config.logger.info(`${key}:`);
+      logConfig(value, server, depth + 2);
+    } else {
+      server.config.logger.info(`${keySpaces}: unknown`);
+    }
+  });
+}
+
+export default function symfony(userOptions: PluginOptions = {}): Plugin {
+  const pluginOptions = resolvePluginOptions(userOptions);
+  let viteConfig: ResolvedConfig;
+  let entryPointsPath: string;
+
   return {
     name: "symfony",
-    config(config) {
-      if (config.build.rollupOptions.input instanceof Array) {
+    enforce: "post",
+    config(userConfig) {
+      if (userConfig.build.rollupOptions.input instanceof Array) {
         console.error("rollupOptions.input must be an Objet like {app: './assets/app.js'}");
         process.exit(1);
       }
 
       const extraConfig: UserConfig = {
+        base: userConfig.base ?? resolveBase(pluginOptions),
+        publicDir: false,
+        build: {
+          manifest: true,
+          outDir: userConfig.build?.outDir ?? resolveOutDir(pluginOptions),
+        },
         server: {
           watch: {
             // needed if you want to reload dev server with twig
@@ -47,8 +125,8 @@ export default function (options: PluginOptions = {}): Plugin {
         },
       };
 
-      if (!config.server?.origin) {
-        const { host = "localhost", port = 5173, https = false } = config.server || {};
+      if (!userConfig.server?.origin) {
+        const { host = "localhost", port = 5173, https = false } = userConfig.server || {};
         extraConfig.server.origin = `http${https ? "s" : ""}://${host}:${port}`;
       }
 
@@ -81,17 +159,33 @@ export default function (options: PluginOptions = {}): Plugin {
     },
     configureServer(devServer) {
       const { watcher, ws } = devServer;
-      watcher.add(resolve("templates/**/*.twig"));
-      watcher.on("change", function (path) {
-        if (path.endsWith(".twig")) {
-          ws.send({
-            type: "full-reload",
-          });
-        }
-      });
 
-      if (options.servePublic !== false) {
-        const serve = sirv("public", {
+      if (pluginOptions.verbose) {
+        devServer.httpServer?.once("listening", () => {
+          setTimeout(() => {
+            devServer.config.logger.info(`\n${colors.green("➜")}  Vite Config`);
+            logConfig(viteConfig, devServer, 0);
+            devServer.config.logger.info(`\n${colors.green("➜")}  End of config \n`);
+          }, 100);
+        });
+      }
+
+      if (pluginOptions.refresh) {
+        const paths = pluginOptions.refresh === true ? refreshPaths : pluginOptions.refresh;
+        for (const path of paths) {
+          watcher.add(path);
+        }
+        watcher.on("change", function (path) {
+          if (path.endsWith(".twig")) {
+            ws.send({
+              type: "full-reload",
+            });
+          }
+        });
+      }
+
+      if (pluginOptions.servePublic) {
+        const serve = sirv(pluginOptions.publicDirectory, {
           dev: true,
           etag: true,
           extensions: [],
@@ -109,6 +203,12 @@ export default function (options: PluginOptions = {}): Plugin {
           },
         });
         devServer.middlewares.use(function viteServePublicMiddleware(req, res, next) {
+          if (req.url === "/" || req.url === "/build/") {
+            res.statusCode = 404;
+            res.end(readFileSync(join(__dirname, "dev-server-404.html")));
+            return;
+          }
+
           // skip import request and internal requests `/@fs/ /@vite-client` etc...
           if (isImportRequest(req.url!) || isInternalRequest(req.url!)) {
             return next();

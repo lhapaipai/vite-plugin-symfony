@@ -4,15 +4,18 @@
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "author": "Lhapaipai",
+  "author": {
+    "name": "Hugues Tavernier",
+    "email": "hugues.tavernier@protonmail.com"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/lhapaipai/vite-plugin-symfony.git"
   },
   "scripts": {
-    "dev": "tsc --build --watch",
-    "build": "tsc --build"
+    "dev": "cp src/dev-server-404.html dist/ && tsc --build --watch",
+    "build": "tsc --build && cp src/dev-server-404.html dist/"
   },
   "files": [
     "dist/",
@@ -26,6 +29,7 @@
     "eslint": "^8.19.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "picocolors": "^1.0.0",
     "prettier": "^2.7.1",
     "typescript": "^4.7.4",
     "vite": "^3.0"
