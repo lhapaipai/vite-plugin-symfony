@@ -66,6 +66,12 @@ type PluginOptions = {
   refresh?: boolean | string[];
 
   /**
+   * If you set server.host: '0.0.0.0' in your vite.config.js
+   * you have to set 'localhost' 
+   */
+  viteDevServerHostname?: string;
+
+  /**
    * Show vite resolved config
    * @default false
    */

@@ -1,3 +1,7 @@
+## v0.6.2
+
+- add `viteDevServerHost` plugin option
+
 ## v0.6.1
 
 - remove `strictPort: true`

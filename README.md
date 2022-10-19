@@ -47,6 +47,10 @@ export default defineConfig({
 
             /* boolean or array of paths for your twig templates */
             refresh: ["templates/**/*.twig"]
+
+            /** If you set server.host: '0.0.0.0' in your vite.config.js
+             * you have to set 'localhost' */
+            viteDevServerHostname: null
         }),
     ],
 

@@ -59,11 +59,16 @@ function resolvePluginOptions(userConfig: PluginOptions = {}): Required<PluginOp
     publicDirectory: userConfig.publicDirectory ?? "public",
     buildDirectory: userConfig.buildDirectory ?? "build",
     refresh: userConfig.refresh ?? false,
+    viteDevServerHostname: userConfig.viteDevServerHostname ?? null,
     verbose: userConfig.verbose === true ?? false,
   };
 }
 
-function resolveDevServerUrl(address: AddressInfo, config: ResolvedConfig): DevServerUrl {
+function resolveDevServerUrl(
+  address: AddressInfo,
+  config: ResolvedConfig,
+  pluginOptions: Required<PluginOptions>,
+): DevServerUrl {
   const configHmrProtocol = typeof config.server.hmr === "object" ? config.server.hmr.protocol : null;
   const clientProtocol = configHmrProtocol ? (configHmrProtocol === "wss" ? "https" : "http") : null;
   const serverProtocol = config.server.https ? "https" : "http";
@@ -72,7 +77,7 @@ function resolveDevServerUrl(address: AddressInfo, config: ResolvedConfig): DevS
   const configHmrHost = typeof config.server.hmr === "object" ? config.server.hmr.host : null;
   const configHost = typeof config.server.host === "string" ? config.server.host : null;
   const serverAddress = isIpv6(address) ? `[${address.address}]` : address.address;
-  const host = configHmrHost ?? configHost ?? serverAddress;
+  const host = configHmrHost ?? configHost ?? pluginOptions.viteDevServerHostname ?? serverAddress;
 
   const configHmrClientPort = typeof config.server.hmr === "object" ? config.server.hmr.clientPort : null;
   const port = configHmrClientPort ?? address.port;
@@ -186,7 +191,7 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
             process.exit(1);
           }
 
-          viteDevServerUrl = resolveDevServerUrl(address, devServer.config);
+          viteDevServerUrl = resolveDevServerUrl(address, devServer.config, pluginOptions);
 
           const entryPoints = getDevEntryPoints(viteConfig, viteDevServerUrl);
           writeJson(entryPointsPath, {
