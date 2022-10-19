@@ -67,7 +67,7 @@ type PluginOptions = {
 
   /**
    * If you set server.host: '0.0.0.0' in your vite.config.js
-   * you have to set 'localhost' 
+   * you have to set 'localhost'
    */
   viteDevServerHostname?: string;
 
