@@ -34,9 +34,12 @@ type ManifestEntry = {
   imports?: string[];
   css?: string[];
 };
+
 type Manifest = {
   [k: string]: ManifestEntry;
 };
+
+type DevServerUrl = `${"http" | "https"}://${string}:${number}`;
 
 type PluginOptions = {
   /**

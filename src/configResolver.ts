@@ -2,13 +2,12 @@ import { cwd } from "process";
 import { resolve, extname } from "path";
 import type { ResolvedConfig } from "vite";
 
-const getDevEntryPoints = (config: ResolvedConfig) => {
+const getDevEntryPoints = (config: ResolvedConfig, viteDevServerUrl: string) => {
   const entryPoints: EntryPoints = {};
-  const { origin } = config.server;
 
   for (const [entryName, { entryPath, entryType }] of Object.entries(parseInput(config))) {
     entryPoints[entryName] = {
-      [entryType]: [`${origin}${config.base}${entryPath}`],
+      [entryType]: [`${viteDevServerUrl}${config.base}${entryPath}`],
     };
   }
   return entryPoints;

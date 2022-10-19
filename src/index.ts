@@ -3,6 +3,7 @@ import sirv from "sirv";
 
 import { resolve, join } from "path";
 import { existsSync, mkdirSync, readFileSync } from "fs";
+import { AddressInfo } from "net";
 
 import { getDevEntryPoints, getBuildEntryPoints } from "./configResolver";
 import { getAssets } from "./assetsResolver";
@@ -62,6 +63,34 @@ function resolvePluginOptions(userConfig: PluginOptions = {}): Required<PluginOp
   };
 }
 
+function resolveDevServerUrl(address: AddressInfo, config: ResolvedConfig): DevServerUrl {
+  const configHmrProtocol = typeof config.server.hmr === "object" ? config.server.hmr.protocol : null;
+  const clientProtocol = configHmrProtocol ? (configHmrProtocol === "wss" ? "https" : "http") : null;
+  const serverProtocol = config.server.https ? "https" : "http";
+  const protocol = clientProtocol ?? serverProtocol;
+
+  const configHmrHost = typeof config.server.hmr === "object" ? config.server.hmr.host : null;
+  const configHost = typeof config.server.host === "string" ? config.server.host : null;
+  const serverAddress = isIpv6(address) ? `[${address.address}]` : address.address;
+  const host = configHmrHost ?? configHost ?? serverAddress;
+
+  const configHmrClientPort = typeof config.server.hmr === "object" ? config.server.hmr.clientPort : null;
+  const port = configHmrClientPort ?? address.port;
+
+  return `${protocol}://${host}:${port}`;
+}
+
+function isIpv6(address: AddressInfo): boolean {
+  return (
+    address.family === "IPv6" ||
+    // In node >=18.0 <18.4 this was an integer value. This was changed in a minor version.
+    // See: https://github.com/laravel/vite-plugin/issues/103
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore-next-line
+    address.family === 6
+  );
+}
+
 function logConfig(config: any, server: ViteDevServer, depth: number) {
   Object.entries(config).map(([key, value]) => {
     const prefix = " ".repeat(depth);
@@ -94,6 +123,7 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
   const pluginOptions = resolvePluginOptions(userOptions);
   let viteConfig: ResolvedConfig;
   let entryPointsPath: string;
+  let viteDevServerUrl: string;
 
   return {
     name: "symfony",
@@ -116,7 +146,6 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
             // needed if you want to reload dev server with twig
             disableGlobbing: false,
           },
-          strictPort: true,
         },
 
         optimizeDeps: {
@@ -135,40 +164,50 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
     configResolved(config) {
       viteConfig = config;
       entryPointsPath = resolve(config.root, config.build.outDir, "entrypoints.json");
-
-      if (config.env.DEV) {
-        const buildDir = resolve(config.root, config.build.outDir);
-
-        if (!existsSync(buildDir)) {
-          mkdirSync(buildDir, { recursive: true });
-        }
-
-        existsSync(buildDir) && emptyDir(buildDir);
-
-        const entryPoints = getDevEntryPoints(config);
-        writeJson(entryPointsPath, {
-          isProd: false,
-          viteServer: {
-            origin: config.server.origin,
-            base: config.base,
-          },
-          entryPoints,
-          assets: null,
-        });
-      }
     },
     configureServer(devServer) {
       const { watcher, ws } = devServer;
 
-      if (pluginOptions.verbose) {
-        devServer.httpServer?.once("listening", () => {
+      devServer.httpServer?.once("listening", () => {
+        if (viteConfig.env.DEV) {
+          const buildDir = resolve(viteConfig.root, viteConfig.build.outDir);
+
+          if (!existsSync(buildDir)) {
+            mkdirSync(buildDir, { recursive: true });
+          }
+
+          existsSync(buildDir) && emptyDir(buildDir);
+
+          const address = devServer.httpServer?.address();
+          const isAddressInfo = (x: string | AddressInfo | null | undefined): x is AddressInfo => typeof x === "object";
+
+          if (!isAddressInfo(address)) {
+            console.error("address is not an object open an issue with your address value to fix the problem", address);
+            process.exit(1);
+          }
+
+          viteDevServerUrl = resolveDevServerUrl(address, devServer.config);
+
+          const entryPoints = getDevEntryPoints(viteConfig, viteDevServerUrl);
+          writeJson(entryPointsPath, {
+            isProd: false,
+            viteServer: {
+              origin: viteDevServerUrl,
+              base: viteConfig.base,
+            },
+            entryPoints,
+            assets: null,
+          });
+        }
+
+        if (pluginOptions.verbose) {
           setTimeout(() => {
             devServer.config.logger.info(`\n${colors.green("➜")}  Vite Config`);
             logConfig(viteConfig, devServer, 0);
             devServer.config.logger.info(`\n${colors.green("➜")}  End of config \n`);
           }, 100);
-        });
-      }
+        }
+      });
 
       if (pluginOptions.refresh) {
         const paths = pluginOptions.refresh === true ? refreshPaths : pluginOptions.refresh;
