@@ -1,3 +1,7 @@
+## v0.6.1
+
+- remove `strictPort: true`
+
 ## v0.6.0
 
 - add `publicDirectory`, `buildDirectory`, `refresh`, `verbose` plugin option
