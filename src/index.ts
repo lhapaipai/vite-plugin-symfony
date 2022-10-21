@@ -77,7 +77,7 @@ function resolveDevServerUrl(
   const configHmrHost = typeof config.server.hmr === "object" ? config.server.hmr.host : null;
   const configHost = typeof config.server.host === "string" ? config.server.host : null;
   const serverAddress = isIpv6(address) ? `[${address.address}]` : address.address;
-  const host = configHmrHost ?? configHost ?? pluginOptions.viteDevServerHostname ?? serverAddress;
+  const host = configHmrHost ?? pluginOptions.viteDevServerHostname ?? configHost ?? serverAddress;
 
   const configHmrClientPort = typeof config.server.hmr === "object" ? config.server.hmr.clientPort : null;
   const port = configHmrClientPort ?? address.port;
