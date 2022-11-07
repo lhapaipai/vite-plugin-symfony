@@ -69,6 +69,10 @@ function resolveDevServerUrl(
   config: ResolvedConfig,
   pluginOptions: Required<PluginOptions>,
 ): DevServerUrl {
+  if (config.server?.origin) {
+    return config.server.origin as DevServerUrl;
+  }
+
   const configHmrProtocol = typeof config.server.hmr === "object" ? config.server.hmr.protocol : null;
   const clientProtocol = configHmrProtocol ? (configHmrProtocol === "wss" ? "https" : "http") : null;
   const serverProtocol = config.server.https ? "https" : "http";
@@ -158,11 +162,6 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
           force: true,
         },
       };
-
-      if (!userConfig.server?.origin) {
-        const { host = "localhost", port = 5173, https = false } = userConfig.server || {};
-        extraConfig.server.origin = `http${https ? "s" : ""}://${host}:${port}`;
-      }
 
       return extraConfig;
     },
