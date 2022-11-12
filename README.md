@@ -92,3 +92,82 @@ Although it has no special dependencies, this package is intended for use with t
 ## Migrations
 
 If you use previous version of the plugin consult [migration](migration.md) page.
+
+## Todo
+
+- plugin option to preload dynamic imports
+
+
+## In depth
+
+default js entryPoint
+
+```json
+{
+  "assets/welcome.js": {
+    "file": "assets/welcome.e107d3d9.js",
+    "src": "assets/welcome.js",
+    "isEntry": true
+  },
+}
+```
+
+js entryPoint with chunk entrypoints 
+    -> by default with vite until 2.8
+    -> with plugin 
+    ```js
+        import { splitVendorChunkPlugin } from 'vite'
+
+        export default defineConfig({
+        plugins: [
+            symfonyPlugin(),
+            splitVendorChunkPlugin()
+        ]
+    ```
+
+```json
+{
+  "assets/page-vue.js": {
+    "file": "assets/pageVue.ef10a2a2.js",
+    "src": "assets/page-vue.js",
+    "isEntry": true,
+    "imports": [
+      "_vendor.d13b263d.js"
+    ]
+  },
+  "_vendor.d13b263d.js": {
+    "file": "assets/vendor.d13b263d.js"
+  }
+}
+```
+we need to preload imports.
+
+js and Dynamic imports
+```json
+{
+  "assets/page-imports.js": {
+    "file": "assets/pageImports.74302e69.js",
+    "src": "assets/page-imports.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "assets/lib/async-dep.js"
+    ]
+  },
+  "assets/lib/async-dep.js": {
+    "file": "assets/async-dep.8bc0df8e.js",
+    "src": "assets/lib/async-dep.js",
+    "isDynamicEntry": true
+  }
+}
+```
+
+css entry point
+```json
+{
+  "assets/theme.scss": {
+    "file": "assets/theme.2d6210b2.css",
+    "src": "assets/theme.scss",
+    "isEntry": true
+  }
+}
+```

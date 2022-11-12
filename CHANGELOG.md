@@ -1,3 +1,7 @@
+## v0.6.3
+
+- takes into account vite legacy plugin.
+
 ## v0.6.2
 
 - add `viteDevServerHost` plugin option

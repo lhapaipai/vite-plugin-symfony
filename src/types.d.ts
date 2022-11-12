@@ -1,3 +1,14 @@
+// declare module 'rollup' {
+//   export interface RenderedChunk {
+//     viteMetadata: ChunkMetadata
+//   }
+// }
+
+interface ChunkMetadata {
+  importedAssets: Set<string>
+  importedCss: Set<string>
+}
+
 type EntryPointsFile = {
   isProd: boolean;
   viteServer:
@@ -7,15 +18,22 @@ type EntryPointsFile = {
       }
     | false;
   entryPoints: EntryPoints;
+  assets: StringMapping;
+  legacy: Boolean
 };
 
 type EntryPoint = {
   js?: string[];
   css?: string[];
   preload?: string[];
+  legacy?: Boolean | String;
 };
 type EntryPoints = {
   [k: string]: EntryPoint;
+};
+
+type StringMapping = {
+  [k: string]: string
 };
 
 type ParsedInput = {
@@ -26,6 +44,10 @@ type ParsedEntry = {
   entryType: "js" | "css";
   entryPath: string;
 };
+
+type EntryFilesMapping = {
+  [k: string]: string;
+}
 
 type ManifestEntry = {
   file: string;

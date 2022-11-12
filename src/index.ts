@@ -5,8 +5,8 @@ import { resolve, join } from "path";
 import { existsSync, mkdirSync, readFileSync } from "fs";
 import { AddressInfo } from "net";
 
-import { getDevEntryPoints, getBuildEntryPoints } from "./configResolver";
-import { getAssets } from "./assetsResolver";
+import { getDevEntryPoints, addBuildEntryPoints, getBuildEntryPointsLegacy } from "./configResolver";
+import { getAssets, addBuildAssets } from "./assetsResolver";
 import { writeJson, emptyDir } from "./fileHelper";
 
 import colors from "picocolors";
@@ -131,8 +131,13 @@ function logConfig(config: any, server: ViteDevServer, depth: number) {
 export default function symfony(userOptions: PluginOptions = {}): Plugin {
   const pluginOptions = resolvePluginOptions(userOptions);
   let viteConfig: ResolvedConfig;
-  let entryPointsPath: string;
   let viteDevServerUrl: string;
+
+  let entryPointsFilename = "entrypoints.json";
+
+  let entryPoints: EntryPoints = {};
+  let assets: StringMapping = {};
+  let outputCount: number = 0;
 
   return {
     name: "symfony",
@@ -147,7 +152,6 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
         base: userConfig.base ?? resolveBase(pluginOptions),
         publicDir: false,
         build: {
-          manifest: true,
           outDir: userConfig.build?.outDir ?? resolveOutDir(pluginOptions),
         },
         server: {
@@ -167,7 +171,6 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
     },
     configResolved(config) {
       viteConfig = config;
-      entryPointsPath = resolve(config.root, config.build.outDir, "entrypoints.json");
     },
     configureServer(devServer) {
       const { watcher, ws } = devServer;
@@ -193,6 +196,8 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
           viteDevServerUrl = resolveDevServerUrl(address, devServer.config, pluginOptions);
 
           const entryPoints = getDevEntryPoints(viteConfig, viteDevServerUrl);
+
+          let entryPointsPath = resolve(viteConfig.root, viteConfig.build.outDir, entryPointsFilename);
           writeJson(entryPointsPath, {
             isProd: false,
             viteServer: {
@@ -201,6 +206,7 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
             },
             entryPoints,
             assets: null,
+            legacy: false
           });
         }
 
@@ -260,22 +266,29 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
         });
       }
     },
-    writeBundle(options, bundles) {
-      if (!bundles["manifest.json"] || bundles["manifest.json"].type !== "asset") {
-        console.error("manifest.json not generated, vite-plugin-symfony need `build.manifest: true`");
-        process.exit(1);
+
+    generateBundle(options, bundle) {
+
+      addBuildEntryPoints(options, viteConfig, bundle, entryPoints);
+      addBuildAssets(viteConfig, bundle, assets);
+
+      outputCount++;
+      const output = viteConfig.build.rollupOptions?.output
+      const outputLength = Array.isArray(output) ? output.length : 1;
+
+      if (outputCount >= outputLength) {
+        this.emitFile({
+          fileName: entryPointsFilename,
+          type: 'asset',
+          source: JSON.stringify({
+            isProd: true,
+            viteServer: false,
+            entryPoints,
+            assets,
+            legacy: typeof entryPoints['polyfills-legacy'] !== "undefined"
+          }, null, 2)
+        })
       }
-
-      const manifest = JSON.parse(bundles["manifest.json"].source.toString());
-      const entryPoints = getBuildEntryPoints(viteConfig, manifest);
-      const assets = getAssets(viteConfig, bundles);
-
-      writeJson(entryPointsPath, {
-        isProd: true,
-        viteServer: false,
-        entryPoints,
-        assets,
-      });
     },
   };
 }
