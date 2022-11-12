@@ -12,4 +12,9 @@ export function normalizePath(id: string): string {
   return path.posix.normalize(isWindows ? slash(id) : id)
 }
 
-
+export function getLegacyName(name: string) {
+  const ext = path.extname(name)
+  const endPos = ext.length !== 0 ? -ext.length : undefined
+  name = name.slice(0, endPos) + `-legacy` + ext
+  return name
+}

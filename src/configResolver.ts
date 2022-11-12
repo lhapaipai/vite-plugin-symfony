@@ -2,7 +2,7 @@ import { cwd } from "process";
 import { resolve, extname } from "path";
 import type { ResolvedConfig } from "vite";
 import type { OutputBundle, OutputChunk, OutputAsset, NormalizedOutputOptions } from "rollup";
-import { normalizePath } from "./utils";
+import { normalizePath, getLegacyName } from "./utils";
 import path from 'node:path'
 
 const getDevEntryPoints = (config: ResolvedConfig, viteDevServerUrl: string) => {
@@ -22,13 +22,6 @@ const addBuildEntryPoints = (
   bundle: OutputBundle,
   entryPoints: EntryPoints
 ) => {
-
-  function getLegacyName(name: string) {
-    const ext = path.extname(name)
-    const endPos = ext.length !== 0 ? -ext.length : undefined
-    name = name.slice(0, endPos) + `-legacy` + ext
-    return name
-  }
 
   function getFileName(chunk: OutputAsset | OutputChunk) {
     if (chunk.type === 'asset') {
@@ -72,7 +65,6 @@ const addBuildEntryPoints = (
     let legacyEntryPoint = typeof entryPoints[`${finalEntryName}-legacy`] !== "undefined" ? `${finalEntryName}-legacy` : false
 
     entryPoints[finalEntryName] = resolveEntrypoint(fileInfos, bundle, config, legacyEntryPoint, true);
-    
   }
 
   if (name2exportName['vite/legacy-polyfills-legacy']) {
@@ -127,78 +119,23 @@ const resolveEntrypoint = (
   let filePath = `${config.base}${fileInfos.fileName}`
 
   if (isCSSOrJsEntry) {
-      if (fileInfos.isEntry) {
-          js.push(filePath)
-      } else {
-          css.push(filePath)
-      }
+    if (fileInfos.isEntry) {
+      // it is a JS file
+      js.push(filePath)
+    } else {
+      css.push(filePath)
+    }
   } else if (preload.indexOf(filePath) === -1) {
-      preload.push(filePath);
+    preload.push(filePath);
   }
 
   if (fileInfos.viteMetadata?.importedCss.size) {
     fileInfos.viteMetadata.importedCss.forEach(cssFilePath => {
-        css.push(cssFilePath);
+      css.push(`${config.base}${cssFilePath}`);
     })
   }
   return { js, css, preload, legacy: legacyEntryPoint };
 }
-
-
-const parseManifestEntry = ({ entryPath, entryType }: ParsedEntry, manifest: Manifest, config: ResolvedConfig) => {
-  if (!manifest[entryPath]) {
-    throw new Error(`Entrypoint ${entryPath} not defined in the manifest`);
-  }
-  const manifestEntry = manifest[entryPath];
-
-  const js: string[] = [];
-  const css: string[] = [];
-  const preload: string[] = [];
-
-  if (manifestEntry.imports) {
-    for (const importEntryName of manifestEntry.imports) {
-      const { css: importCss, preload: importPreload } = parseManifestEntry(
-        {
-          entryPath: importEntryName,
-          entryType: "js",
-        },
-        manifest,
-        config,
-      );
-
-      for (const dependency of importCss) {
-        if (css.indexOf(dependency) === -1) {
-          css.push(dependency);
-        }
-      }
-      for (const dependency of importPreload) {
-        if (preload.indexOf(dependency) === -1) {
-          preload.push(dependency);
-        }
-      }
-    }
-  }
-
-  if (manifestEntry.isEntry) {
-    if (entryType === "js") {
-      js.push(`${config.base}${manifestEntry.file}`);
-    } else if (entryType === "css") {
-      css.push(`${config.base}${manifestEntry.file}`);
-    }
-  } else if (preload.indexOf(`${config.base}${manifestEntry.file}`) === -1) {
-    preload.push(`${config.base}${manifestEntry.file}`);
-  }
-
-  if (manifestEntry.css) {
-    manifestEntry.css.forEach((cssEntry) => {
-      if (css.indexOf(`${config.base}${cssEntry}`) === -1) {
-        css.push(`${config.base}${cssEntry}`);
-      }
-    });
-  }
-
-  return { js, css, preload };
-};
 
 const parseInput = (config: ResolvedConfig) => {
   const inputParsed: ParsedInput = {};
