@@ -16,17 +16,6 @@ const getDevEntryPoints = (config: ResolvedConfig, viteDevServerUrl: string) => 
   return entryPoints;
 };
 
-const getBuildEntryPointsLegacy = (config: ResolvedConfig, manifest: Manifest) => {
-  const entryPoints: EntryPoints = {};
-
-  for (const [entryName, entry] of Object.entries(parseInput(config))) {
-    entryPoints[entryName] = parseManifestEntry(entry, manifest, config);
-  }
-
-  return entryPoints;
-};
-
-
 const addBuildEntryPoints = (
   options: NormalizedOutputOptions,
   config: ResolvedConfig,
@@ -137,7 +126,6 @@ const resolveEntrypoint = (
 
   let filePath = `${config.base}${fileInfos.fileName}`
 
-  debugger
   if (isCSSOrJsEntry) {
       if (fileInfos.isEntry) {
           js.push(filePath)
@@ -261,4 +249,4 @@ export const getEntryFilesMapping = (config: ResolvedConfig) => {
   return inputParsed;
 };
 
-export { getDevEntryPoints, addBuildEntryPoints, getBuildEntryPointsLegacy };
+export { getDevEntryPoints, addBuildEntryPoints };

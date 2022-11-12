@@ -5,8 +5,8 @@ import { resolve, join } from "path";
 import { existsSync, mkdirSync, readFileSync } from "fs";
 import { AddressInfo } from "net";
 
-import { getDevEntryPoints, addBuildEntryPoints, getBuildEntryPointsLegacy } from "./configResolver";
-import { getAssets, addBuildAssets } from "./assetsResolver";
+import { getDevEntryPoints, addBuildEntryPoints } from "./configResolver";
+import { addBuildAssets } from "./assetsResolver";
 import { writeJson, emptyDir } from "./fileHelper";
 
 import colors from "picocolors";
