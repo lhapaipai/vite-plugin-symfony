@@ -115,15 +115,17 @@ default js entryPoint
 js entryPoint with chunk entrypoints 
     -> by default with vite until 2.8
     -> with plugin 
-    ```js
-        import { splitVendorChunkPlugin } from 'vite'
 
-        export default defineConfig({
-        plugins: [
-            symfonyPlugin(),
-            splitVendorChunkPlugin()
-        ]
-    ```
+```js
+import { splitVendorChunkPlugin } from 'vite'
+
+export default defineConfig({
+    plugins: [
+        symfonyPlugin(),
+        splitVendorChunkPlugin(),
+    ]
+});
+```
 
 ```json
 {
