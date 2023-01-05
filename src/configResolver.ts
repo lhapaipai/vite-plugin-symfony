@@ -4,6 +4,7 @@ import type { ResolvedConfig } from "vite";
 import type { OutputBundle, OutputChunk, OutputAsset, NormalizedOutputOptions } from "rollup";
 import { normalizePath, getLegacyName } from "./utils";
 import path from "node:path";
+import { name2exportName } from "./namesMapping";
 
 const getDevEntryPoints = (config: ResolvedConfig, viteDevServerUrl: string) => {
   const entryPoints: EntryPoints = {};
@@ -38,7 +39,6 @@ const addBuildEntryPoints = (
     }
   }
 
-  const name2exportName: StringMapping = {};
   for (const chunkName in bundle) {
     name2exportName[getFileName(bundle[chunkName])] = chunkName;
   }

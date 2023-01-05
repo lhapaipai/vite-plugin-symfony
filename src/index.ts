@@ -1,7 +1,9 @@
 import { Plugin, UserConfig, ResolvedConfig, ViteDevServer } from "vite";
 import sirv from "sirv";
 
-import { resolve, join } from "path";
+import type { OutputChunk } from "rollup";
+
+import { resolve, join, relative } from "path";
 import { existsSync, mkdirSync, readFileSync } from "fs";
 import { AddressInfo } from "net";
 
@@ -10,6 +12,8 @@ import { addBuildAssets } from "./assetsResolver";
 import { writeJson, emptyDir } from "./fileHelper";
 
 import colors from "picocolors";
+import { name2exportName } from "./namesMapping";
+import { normalizePath } from "./utils";
 
 /* not imported from vite because we don't want vite in package.json dependancy */
 const FS_PREFIX = `/@fs/`;
@@ -266,7 +270,23 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
         });
       }
     },
+    async renderChunk(code, chunk: OutputChunk & { viteMetadata: ChunkMetadata }, opts) {
+      if (!chunk.isEntry) {
+        return;
+      }
+      const fileExt = chunk.facadeModuleId.split(".").pop();
+      if (["scss", "css"].indexOf(fileExt) === -1) {
+        return;
+      }
 
+      const cssAssetName = chunk.facadeModuleId
+        ? normalizePath(relative(viteConfig.root, chunk.facadeModuleId))
+        : chunk.name;
+
+      chunk.viteMetadata.importedCss.forEach((cssBuildFilename) => {
+        name2exportName[cssAssetName] = cssBuildFilename;
+      });
+    },
     generateBundle(options, bundle) {
       addBuildEntryPoints(options, viteConfig, bundle, entryPoints);
       addBuildAssets(viteConfig, bundle, assets);
