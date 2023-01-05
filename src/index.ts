@@ -133,11 +133,11 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
   let viteConfig: ResolvedConfig;
   let viteDevServerUrl: string;
 
-  let entryPointsFilename = "entrypoints.json";
+  const entryPointsFilename = "entrypoints.json";
 
-  let entryPoints: EntryPoints = {};
-  let assets: StringMapping = {};
-  let outputCount: number = 0;
+  const entryPoints: EntryPoints = {};
+  const assets: StringMapping = {};
+  let outputCount = 0;
 
   return {
     name: "symfony",
@@ -197,7 +197,7 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
 
           const entryPoints = getDevEntryPoints(viteConfig, viteDevServerUrl);
 
-          let entryPointsPath = resolve(viteConfig.root, viteConfig.build.outDir, entryPointsFilename);
+          const entryPointsPath = resolve(viteConfig.root, viteConfig.build.outDir, entryPointsFilename);
           writeJson(entryPointsPath, {
             isProd: false,
             viteServer: {
@@ -206,7 +206,7 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
             },
             entryPoints,
             assets: null,
-            legacy: false
+            legacy: false,
           });
         }
 
@@ -268,26 +268,29 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
     },
 
     generateBundle(options, bundle) {
-
       addBuildEntryPoints(options, viteConfig, bundle, entryPoints);
       addBuildAssets(viteConfig, bundle, assets);
 
       outputCount++;
-      const output = viteConfig.build.rollupOptions?.output
+      const output = viteConfig.build.rollupOptions?.output;
       const outputLength = Array.isArray(output) ? output.length : 1;
 
       if (outputCount >= outputLength) {
         this.emitFile({
           fileName: entryPointsFilename,
-          type: 'asset',
-          source: JSON.stringify({
-            isProd: true,
-            viteServer: false,
-            entryPoints,
-            assets,
-            legacy: typeof entryPoints['polyfills-legacy'] !== "undefined"
-          }, null, 2)
-        })
+          type: "asset",
+          source: JSON.stringify(
+            {
+              isProd: true,
+              viteServer: false,
+              entryPoints,
+              assets,
+              legacy: typeof entryPoints["polyfills-legacy"] !== "undefined",
+            },
+            null,
+            2,
+          ),
+        });
       }
     },
   };
