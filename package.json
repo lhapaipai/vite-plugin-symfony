@@ -45,7 +45,7 @@
   },
   "homepage": "https://github.com/lhapaipai/vite-plugin-symfony#readme",
   "peerDependencies": {
-    "vite": "^3.0"
+    "vite": "^4.0"
   },
   "volta": {
     "node": "18.12.1"
