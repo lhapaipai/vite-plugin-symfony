@@ -72,8 +72,8 @@ and your package.json :
         "build": "vite build"
     },
     "devDependencies": {
-        "vite": "^3.0",
-        "vite-plugin-symfony": "^0.6.0"
+        "vite": "^4.0",
+        "vite-plugin-symfony": "^0.7.2"
     }
 }
 ```
@@ -93,72 +93,23 @@ Although it has no special dependencies, this package is intended for use with t
 
 If you use previous version of the plugin consult [migration](migration.md) page.
 
-## Todo
-
-- plugin option to preload dynamic imports
-
-
 ## In depth
 
 default js entryPoint
 
 ```json
 {
-  "assets/welcome.js": {
-    "file": "assets/welcome.e107d3d9.js",
-    "src": "assets/welcome.js",
-    "isEntry": true
-  },
-}
-```
-
-js entryPoint with chunk entrypoints 
-    -> by default with vite until 2.8
-    -> with plugin 
-
-```js
-import { splitVendorChunkPlugin } from 'vite'
-
-export default defineConfig({
-    plugins: [
-        symfonyPlugin(),
-        splitVendorChunkPlugin(),
-    ]
-});
-```
-
-```json
-{
-  "assets/page-vue.js": {
-    "file": "assets/pageVue.ef10a2a2.js",
-    "src": "assets/page-vue.js",
-    "isEntry": true,
-    "imports": [
-      "_vendor.d13b263d.js"
-    ]
-  },
-  "_vendor.d13b263d.js": {
-    "file": "assets/vendor.d13b263d.js"
-  }
-}
-```
-we need to preload imports.
-
-js and Dynamic imports
-```json
-{
-  "assets/page-imports.js": {
-    "file": "assets/pageImports.74302e69.js",
-    "src": "assets/page-imports.js",
-    "isEntry": true,
-    "dynamicImports": [
-      "assets/lib/async-dep.js"
-    ]
-  },
-  "assets/lib/async-dep.js": {
-    "file": "assets/async-dep.8bc0df8e.js",
-    "src": "assets/lib/async-dep.js",
-    "isDynamicEntry": true
+  "isProd": true,
+  "viteServer": false,
+  "entryPoints": {
+    "welcome": {
+      "js": [
+        "/build/assets/welcome-1e67239d.js"
+      ],
+      "css": [],
+      "preload": [],
+      "legacy": false
+    }
   }
 }
 ```
@@ -166,10 +117,17 @@ js and Dynamic imports
 css entry point
 ```json
 {
-  "assets/theme.scss": {
-    "file": "assets/theme.2d6210b2.css",
-    "src": "assets/theme.scss",
-    "isEntry": true
+  "isProd": true,
+  "viteServer": false,
+  "entryPoints": {
+    "theme": {
+      "js": [],
+      "css": [
+        "/build/assets/theme-44b5be96.css"
+      ],
+      "preload": [],
+      "legacy": false
+    }
   }
 }
 ```

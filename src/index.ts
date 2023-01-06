@@ -156,6 +156,7 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
         base: userConfig.base ?? resolveBase(pluginOptions),
         publicDir: false,
         build: {
+          manifest: true,
           outDir: userConfig.build?.outDir ?? resolveOutDir(pluginOptions),
         },
         server: {

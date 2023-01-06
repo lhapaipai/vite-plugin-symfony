@@ -70,7 +70,9 @@ const addBuildEntryPoints = (
     const fileInfos = <OutputChunk & { viteMetadata: ChunkMetadata }>(
       bundle[name2exportName["vite/legacy-polyfills-legacy"]]
     );
-    entryPoints["polyfills-legacy"] = resolveEntrypoint(fileInfos, bundle, config, false, true);
+    if (fileInfos) {
+      entryPoints["polyfills-legacy"] = resolveEntrypoint(fileInfos, bundle, config, false, true);
+    }
   }
 
   return entryPoints;
