@@ -5,8 +5,8 @@
 // }
 
 interface ChunkMetadata {
-  importedAssets: Set<string>
-  importedCss: Set<string>
+  importedAssets: Set<string>;
+  importedCss: Set<string>;
 }
 
 type EntryPointsFile = {
@@ -19,24 +19,24 @@ type EntryPointsFile = {
     | false;
   entryPoints: EntryPoints;
   assets: StringMapping;
-  legacy: Boolean
+  legacy: boolean;
 };
 
 type EntryPoint = {
   js?: string[];
   css?: string[];
   preload?: string[];
-  legacy?: Boolean | String;
+  legacy?: boolean | string;
 };
 type EntryPoints = {
   [k: string]: EntryPoint;
 };
 
 type StringMapping = {
-  [k: string]: string
+  [k: string]: string;
 };
 
-type ParsedInput = {
+type ParsedInputs = {
   [k: string]: ParsedEntry;
 };
 
@@ -47,7 +47,7 @@ type ParsedEntry = {
 
 type EntryFilesMapping = {
   [k: string]: string;
-}
+};
 
 type ManifestEntry = {
   file: string;

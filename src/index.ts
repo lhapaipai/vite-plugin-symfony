@@ -1,19 +1,16 @@
-import { Plugin, UserConfig, ResolvedConfig, ViteDevServer } from "vite";
+import { resolve, join, relative } from "node:path";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import type { AddressInfo } from "node:net";
+
+import { Plugin, UserConfig, ResolvedConfig } from "vite";
 import sirv from "sirv";
+import colors from "picocolors";
 
 import type { OutputChunk } from "rollup";
 
-import { resolve, join, relative } from "path";
-import { existsSync, mkdirSync, readFileSync } from "fs";
-import { AddressInfo } from "net";
-
-import { getDevEntryPoints, addBuildEntryPoints } from "./configResolver";
-import { addBuildAssets } from "./assetsResolver";
-import { writeJson, emptyDir } from "./fileHelper";
-
-import colors from "picocolors";
-import { name2exportName } from "./namesMapping";
-import { normalizePath } from "./utils";
+import { getDevEntryPoints, addBuildEntryPoints, entryPath2exportPath } from "./entryPointsHelper";
+import { logConfig, normalizePath, isIpv6, writeJson, emptyDir } from "./utils";
+import { resolvePluginOptions, resolveBase, resolveOutDir } from "./pluginOptions";
 
 /* not imported from vite because we don't want vite in package.json dependancy */
 const FS_PREFIX = `/@fs/`;
@@ -28,45 +25,6 @@ const isImportRequest = (url: string): boolean => importQueryRE.test(url);
 const isInternalRequest = (url: string): boolean => InternalPrefixRE.test(url);
 
 export const refreshPaths = ["templates/**/*.twig"];
-
-function resolveBase(config: Required<PluginOptions>): string {
-  return "/" + config.buildDirectory + "/";
-}
-
-function resolveOutDir(config: Required<PluginOptions>): string {
-  return join(config.publicDirectory, config.buildDirectory);
-}
-
-function resolvePluginOptions(userConfig: PluginOptions = {}): Required<PluginOptions> {
-  if (typeof userConfig.publicDirectory === "string") {
-    userConfig.publicDirectory = userConfig.publicDirectory.trim().replace(/^\/+/, "");
-
-    if (userConfig.publicDirectory === "") {
-      throw new Error("vite-plugin-symfony: publicDirectory must be a subdirectory. E.g. 'public'.");
-    }
-  }
-
-  if (typeof userConfig.buildDirectory === "string") {
-    userConfig.buildDirectory = userConfig.buildDirectory.trim().replace(/^\/+/, "").replace(/\/+$/, "");
-
-    if (userConfig.buildDirectory === "") {
-      throw new Error("vite-plugin-symfony: buildDirectory must be a subdirectory. E.g. 'build'.");
-    }
-  }
-
-  if (userConfig.servePublic !== false) {
-    userConfig.servePublic = true;
-  }
-
-  return {
-    servePublic: userConfig.servePublic,
-    publicDirectory: userConfig.publicDirectory ?? "public",
-    buildDirectory: userConfig.buildDirectory ?? "build",
-    refresh: userConfig.refresh ?? false,
-    viteDevServerHostname: userConfig.viteDevServerHostname ?? null,
-    verbose: userConfig.verbose === true ?? false,
-  };
-}
 
 function resolveDevServerUrl(
   address: AddressInfo,
@@ -93,45 +51,6 @@ function resolveDevServerUrl(
   return `${protocol}://${host}:${port}`;
 }
 
-function isIpv6(address: AddressInfo): boolean {
-  return (
-    address.family === "IPv6" ||
-    // In node >=18.0 <18.4 this was an integer value. This was changed in a minor version.
-    // See: https://github.com/laravel/vite-plugin/issues/103
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore-next-line
-    address.family === 6
-  );
-}
-
-function logConfig(config: any, server: ViteDevServer, depth: number) {
-  Object.entries(config).map(([key, value]) => {
-    const prefix = " ".repeat(depth);
-    const keySpaces = prefix + colors.dim(key) + " ".repeat(30 - key.length - prefix.length);
-    if (
-      typeof value === "undefined" ||
-      typeof value === "boolean" ||
-      typeof value === "number" ||
-      typeof value === "bigint"
-    ) {
-      server.config.logger.info(`${keySpaces}: ${value ? colors.green(value.toString()) : value}`);
-    } else if (typeof value === "string") {
-      server.config.logger.info(`${keySpaces}: ${value ? colors.green('"' + value.toString() + '"') : value}`);
-    } else if (typeof value === "symbol") {
-      server.config.logger.info(`${keySpaces}: symbol`);
-    } else if (typeof value === "function") {
-      server.config.logger.info(`${keySpaces}: function`);
-    } else if (value === null) {
-      server.config.logger.info(`${keySpaces}: null`);
-    } else if (typeof value === "object") {
-      server.config.logger.info(`${key}:`);
-      logConfig(value, server, depth + 2);
-    } else {
-      server.config.logger.info(`${keySpaces}: unknown`);
-    }
-  });
-}
-
 export default function symfony(userOptions: PluginOptions = {}): Plugin {
   const pluginOptions = resolvePluginOptions(userOptions);
   let viteConfig: ResolvedConfig;
@@ -140,7 +59,6 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
   const entryPointsFilename = "entrypoints.json";
 
   const entryPoints: EntryPoints = {};
-  const assets: StringMapping = {};
   let outputCount = 0;
 
   return {
@@ -159,13 +77,6 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
           manifest: true,
           outDir: userConfig.build?.outDir ?? resolveOutDir(pluginOptions),
         },
-        server: {
-          watch: {
-            // needed if you want to reload dev server with twig
-            disableGlobbing: false,
-          },
-        },
-
         optimizeDeps: {
           //Set to true to force dependency pre-bundling.
           force: true,
@@ -178,8 +89,11 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
       viteConfig = config;
     },
     configureServer(devServer) {
+      // vite server is running
+
       const { watcher, ws } = devServer;
 
+      // empty the buildDir and create an entrypoints.json file inside.
       devServer.httpServer?.once("listening", () => {
         if (viteConfig.env.DEV) {
           const buildDir = resolve(viteConfig.root, viteConfig.build.outDir);
@@ -210,7 +124,6 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
               base: viteConfig.base,
             },
             entryPoints,
-            assets: null,
             legacy: false,
           });
         }
@@ -224,7 +137,8 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
         }
       });
 
-      if (pluginOptions.refresh) {
+      // full reload vite dev server if twig files are modified.
+      if (pluginOptions.refresh !== false) {
         const paths = pluginOptions.refresh === true ? refreshPaths : pluginOptions.refresh;
         for (const path of paths) {
           watcher.add(path);
@@ -272,28 +186,40 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
       }
     },
     async renderChunk(code, chunk: OutputChunk & { viteMetadata: ChunkMetadata }, opts) {
+      // if entryPoint is not a js file but a css/scss file, only this hook give us the
+      // complete path
       if (!chunk.isEntry) {
         return;
       }
+
+      // facadeModuleId give us the complete path of the entryPoint
+      // -> /path-to-your-project/assets/welcome.js
+      // -> /path-to-your-project/assets/theme.scss
       const fileExt = chunk.facadeModuleId.split(".").pop();
-      if (["scss", "css"].indexOf(fileExt) === -1) {
+      if (["css", "scss", "sass", "less", "styl", "stylus", "postcss"].indexOf(fileExt) === -1) {
         return;
       }
 
+      // Here we have only css entryPoints
       const cssAssetName = chunk.facadeModuleId
         ? normalizePath(relative(viteConfig.root, chunk.facadeModuleId))
         : chunk.name;
 
+      // chunk.viteMetadata.importedCss contains a Set of relative file paths of css files
+      // generated from cssAssetName
       chunk.viteMetadata.importedCss.forEach((cssBuildFilename) => {
-        name2exportName[cssAssetName] = cssBuildFilename;
+        // eg: entryPath2exportPath['assets/theme.scss'] = 'assets/theme-44b5be96.css';
+        entryPath2exportPath[cssAssetName] = cssBuildFilename;
       });
     },
     generateBundle(options, bundle) {
       addBuildEntryPoints(options, viteConfig, bundle, entryPoints);
-      addBuildAssets(viteConfig, bundle, assets);
 
       outputCount++;
       const output = viteConfig.build.rollupOptions?.output;
+
+      // if we have multiple build passes output is an array of each passe.
+      // else we have an object of this unique pass
       const outputLength = Array.isArray(output) ? output.length : 1;
 
       if (outputCount >= outputLength) {
@@ -305,7 +231,6 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
               isProd: true,
               viteServer: false,
               entryPoints,
-              assets,
               legacy: typeof entryPoints["polyfills-legacy"] !== "undefined",
             },
             null,
