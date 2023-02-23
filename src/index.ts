@@ -24,7 +24,7 @@ const InternalPrefixRE = new RegExp(`^(?:${internalPrefixes.join("|")})`);
 const isImportRequest = (url: string): boolean => importQueryRE.test(url);
 const isInternalRequest = (url: string): boolean => InternalPrefixRE.test(url);
 
-export const refreshPaths = ["templates/**/*.twig"];
+const refreshPaths = ["templates/**/*.twig"];
 
 function resolveDevServerUrl(
   address: AddressInfo,
