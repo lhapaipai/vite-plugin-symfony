@@ -14,13 +14,15 @@
     "url": "https://github.com/lhapaipai/vite-plugin-symfony.git"
   },
   "scripts": {
-    "dev": "cp src/dev-server-404.html dist/ && tsc --build --watch",
-    "build": "tsc --build && cp src/dev-server-404.html dist/"
+    "dev": "tsup --watch",
+    "build": "tsup"
   },
   "files": [
     "dist/",
-    "src/"
+    "src/",
+    "static/"
   ],
+  "type": "module",
   "devDependencies": {
     "@types/node": "^18.11.18",
     "@types/ws": "^8.5.4",
@@ -29,8 +31,8 @@
     "eslint": "^8.31.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "picocolors": "^1.0.0",
     "prettier": "^2.8.1",
+    "tsup": "^6.7.0",
     "typescript": "^4.9.4",
     "vite": "^4.0"
   },
@@ -51,6 +53,7 @@
     "node": "18.12.1"
   },
   "dependencies": {
+    "picocolors": "^1.0.0",
     "sirv": "^2.0.2"
   }
 }
