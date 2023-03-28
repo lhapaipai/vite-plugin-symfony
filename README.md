@@ -38,20 +38,7 @@ import symfonyPlugin from "vite-plugin-symfony";
 export default defineConfig({
     plugins: [
         /* reactRefresh(), // if you're using React */
-
-        symfonyPlugin({
-            /* defaultValues */
-            servePublic: true,
-            publicDirectory: 'public',
-            buildDirectory: 'build',
-
-            /* boolean or array of paths for your twig templates : true, false, ["templates/**/*.twig"] */
-            refresh: false,
-
-            /** If you set server.host: '0.0.0.0' in your vite.config.js
-             * you have to set 'localhost' */
-            viteDevServerHostname: null
-        }),
+        symfonyPlugin(/* options */),
     ],
 
     build: {
@@ -77,13 +64,104 @@ and your package.json :
     }
 }
 ```
-From the options `publicDirectory` and `buildDirectory`, `vite-plugin-symfony` will automatically determine the right configuration for `vite`:
 
+### Options
+
+```ts
+{
+    /**
+     * Web directory root
+     * Relative file path from project directory root.
+     * @default 'public'
+     */
+    publicDirectory: string
+
+    /**
+     * Build directory (or path)
+     * Relative path from web directory root
+     * @default 'build'
+     */
+    buildDirectory: string
+
+    /**
+     * By default vite-plugin-symfony set vite option publicDir to false.
+     * Because we don't want symfony entrypoint (index.php) and other files to
+     * be copied into the build directory.
+     * Related to this issue : https://github.com/lhapaipai/vite-bundle/issues/17
+     * 
+     * Vite plugin Symfony use sirv to serve public directory.
+     * 
+     * If you want to force vite option publicDir to true, set servePublic to false.
+     * 
+     * @default true
+     */
+    servePublic: boolean
+
+    /**
+     * Refresh vite dev server when your twig templates are updated.
+     *  - array of paths to files to be watched, or glob patterns
+     *  - true : equivalent to ["templates/**\/*.twig"]
+     * @default false
+     * 
+     * for additional glob documentation, check out low-level library picomatch : https://github.com/micromatch/picomatch
+     */
+    refresh: boolean | string[]
+
+    /**
+     * If you specify vite `server.host` option to '0.0.0.0' (usage with Docker)
+     * You probably need to configure your `viteDevServerHostname` to 'localhost'.
+     * Related to this issue : https://github.com/lhapaipai/vite-bundle/issues/26
+     * 
+     * @default null
+     */
+    viteDevServerHostname: null | string
+}
+```
+
+### Note
+
+`vite-plugin-symfony` use this options :
+- `publicDirectory`
+- `buildDirectory`
+
+to determine the right configuration for `vite`:
 - `base`
 - `build.outDir`
 
-If you have a specific need you can still define your configuration on top.
+so **you have to specify the configuration either from the plugin or from vite but not in both**
 
+```js
+// vite.config.js
+import symfonyPlugin from "vite-plugin-symfony";
+
+export default {
+    plugins: [
+        symfonyPlugin({
+          publicDirectory: 'public',
+          buildDirectory:  'build'
+        }),
+    ],
+};
+```
+
+or
+
+```js
+// vite.config.js
+
+// If you have a specific need you can still define your configuration on top.
+import symfonyPlugin from "vite-plugin-symfony";
+
+export default {
+    plugins: [
+        symfonyPlugin(),
+    ],
+    base: '/build/',
+    build: {
+      outDir: './public/build'
+    }
+};
+```
 
 ## With pentatrion/vite-bundle
 

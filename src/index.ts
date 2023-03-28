@@ -1,9 +1,10 @@
-import { resolve, join, relative } from "node:path";
+import { resolve, join, relative, dirname } from "node:path";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import type { AddressInfo } from "node:net";
 
 import { Plugin, UserConfig, ResolvedConfig } from "vite";
 import sirv from "sirv";
+
 import colors from "picocolors";
 
 import type { OutputChunk } from "rollup";
@@ -11,12 +12,16 @@ import type { OutputChunk } from "rollup";
 import { getDevEntryPoints, addBuildEntryPoints, entryPath2exportPath } from "./entryPointsHelper";
 import { logConfig, normalizePath, isIpv6, writeJson, emptyDir } from "./utils";
 import { resolvePluginOptions, resolveBase, resolveOutDir } from "./pluginOptions";
+import { fileURLToPath } from "node:url";
 
 /* not imported from vite because we don't want vite in package.json dependancy */
 const FS_PREFIX = `/@fs/`;
 const VALID_ID_PREFIX = `/@id/`;
 const CLIENT_PUBLIC_PATH = `/@vite/client`;
 const ENV_PUBLIC_PATH = `/@vite/env`;
+
+// src and dist directory are in the same level;
+const pluginDir = dirname(dirname(fileURLToPath(import.meta.url)));
 
 const importQueryRE = /(\?|&)import=?(?:&|$)/;
 const internalPrefixes = [FS_PREFIX, VALID_ID_PREFIX, CLIENT_PUBLIC_PATH, ENV_PUBLIC_PATH];
@@ -173,7 +178,7 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
         devServer.middlewares.use(function viteServePublicMiddleware(req, res, next) {
           if (req.url === "/" || req.url === "/build/") {
             res.statusCode = 404;
-            res.end(readFileSync(join(__dirname, "dev-server-404.html")));
+            res.end(readFileSync(join(pluginDir, "static/dev-server-404.html")));
             return;
           }
 
