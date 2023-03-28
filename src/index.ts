@@ -21,7 +21,12 @@ const CLIENT_PUBLIC_PATH = `/@vite/client`;
 const ENV_PUBLIC_PATH = `/@vite/env`;
 
 // src and dist directory are in the same level;
-const pluginDir = dirname(dirname(fileURLToPath(import.meta.url)));
+let pluginDir;
+try {
+  pluginDir = dirname(__dirname);
+} catch (e) {
+  pluginDir = dirname(dirname(fileURLToPath(import.meta.url)));
+}
 
 const importQueryRE = /(\?|&)import=?(?:&|$)/;
 const internalPrefixes = [FS_PREFIX, VALID_ID_PREFIX, CLIENT_PUBLIC_PATH, ENV_PUBLIC_PATH];

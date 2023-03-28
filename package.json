@@ -3,6 +3,10 @@
   "version": "0.7.6",
   "description": "",
   "main": "dist/index.js",
+  "exports": {
+    "import": "dist/index.mjs",
+    "require": "dist/index.js"
+  },
   "types": "dist/index.d.ts",
   "author": {
     "name": "Hugues Tavernier",
@@ -22,7 +26,6 @@
     "src/",
     "static/"
   ],
-  "type": "module",
   "devDependencies": {
     "@types/node": "^18.11.18",
     "@types/ws": "^8.5.4",
