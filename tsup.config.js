@@ -7,4 +7,5 @@ export default defineConfig({
   esbuildOptions(options) {
     options.external = ["picocolors"];
   },
+  shims: true,
 });
