@@ -1,7 +1,6 @@
-import { cwd } from "process";
-import { resolve, extname } from "path";
+import { resolve, extname, relative } from "path";
 import type { ResolvedConfig } from "vite";
-import type { OutputBundle, OutputChunk, OutputAsset, NormalizedOutputOptions } from "rollup";
+import type { OutputBundle, OutputChunk, OutputAsset, NormalizedOutputOptions, InputOption } from "rollup";
 import { normalizePath, getLegacyName } from "./utils";
 import path from "node:path";
 
@@ -170,11 +169,18 @@ const resolveEntrypoint = (
   return { js, css, preload, legacy: legacyEntryName };
 };
 
-const prepareRollupInputs = (config: ResolvedConfig): ParsedInputs => {
+export const prepareRollupInputs = (config: {
+  root: string;
+  build: {
+    rollupOptions?: {
+      input: InputOption;
+    };
+  };
+}): ParsedInputs => {
   const inputParsed: ParsedInputs = {};
 
   for (const [entryName, entryPath] of Object.entries(config.build.rollupOptions.input)) {
-    const entryAbsolutePath = normalizePath(resolve(cwd(), entryPath));
+    const entryAbsolutePath = normalizePath(resolve(config.root, entryPath));
 
     if (entryAbsolutePath.indexOf(config.root) !== 0) {
       console.error("Entry points must be inside Vite root directory");
@@ -186,7 +192,7 @@ const prepareRollupInputs = (config: ResolvedConfig): ParsedInputs => {
     const entryType =
       [".css", ".scss", ".sass", ".less", ".styl", ".stylus", ".postcss"].indexOf(extension) !== -1 ? "css" : "js";
 
-    const entryRelativePath = entryAbsolutePath.substring(config.root.length + 1);
+    const entryRelativePath = relative(config.root, entryAbsolutePath);
 
     inputParsed[entryName] = {
       entryType,

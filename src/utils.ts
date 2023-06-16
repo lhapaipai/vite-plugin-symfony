@@ -1,8 +1,7 @@
-import type { ViteDevServer } from "vite";
+import type { ResolvedConfig } from "vite";
 import os from "node:os";
 import path from "node:path";
 import type { AddressInfo } from "net";
-import colors from "picocolors";
 import { writeFileSync, rmSync, readdirSync } from "fs";
 import { join } from "path";
 
@@ -34,34 +33,6 @@ export function isIpv6(address: AddressInfo): boolean {
   );
 }
 
-export function logConfig(config: any, server: ViteDevServer, depth: number) {
-  Object.entries(config).map(([key, value]) => {
-    const prefix = " ".repeat(depth);
-    const keySpaces = prefix + colors.dim(key) + " ".repeat(30 - key.length - prefix.length);
-    if (
-      typeof value === "undefined" ||
-      typeof value === "boolean" ||
-      typeof value === "number" ||
-      typeof value === "bigint"
-    ) {
-      server.config.logger.info(`${keySpaces}: ${value ? colors.green(value.toString()) : value}`);
-    } else if (typeof value === "string") {
-      server.config.logger.info(`${keySpaces}: ${value ? colors.green('"' + value.toString() + '"') : value}`);
-    } else if (typeof value === "symbol") {
-      server.config.logger.info(`${keySpaces}: symbol`);
-    } else if (typeof value === "function") {
-      server.config.logger.info(`${keySpaces}: function`);
-    } else if (value === null) {
-      server.config.logger.info(`${keySpaces}: null`);
-    } else if (typeof value === "object") {
-      server.config.logger.info(`${key}:`);
-      logConfig(value, server, depth + 2);
-    } else {
-      server.config.logger.info(`${keySpaces}: unknown`);
-    }
-  });
-}
-
 export const writeJson = (filePath: string, jsonData: any) => {
   try {
     writeFileSync(filePath, JSON.stringify(jsonData, null, 2));
@@ -76,3 +47,43 @@ export const emptyDir = (dir: string) => {
     rmSync(join(dir, file), { recursive: true });
   }
 };
+
+/* not imported from vite because we don't want vite in package.json dependancy */
+const FS_PREFIX = `/@fs/`;
+const VALID_ID_PREFIX = `/@id/`;
+const CLIENT_PUBLIC_PATH = `/@vite/client`;
+const ENV_PUBLIC_PATH = `/@vite/env`;
+
+const importQueryRE = /(\?|&)import=?(?:&|$)/;
+export const isImportRequest = (url: string): boolean => importQueryRE.test(url);
+
+const internalPrefixes = [FS_PREFIX, VALID_ID_PREFIX, CLIENT_PUBLIC_PATH, ENV_PUBLIC_PATH];
+const InternalPrefixRE = new RegExp(`^(?:${internalPrefixes.join("|")})`);
+export const isInternalRequest = (url: string): boolean => InternalPrefixRE.test(url);
+
+export function resolveDevServerUrl(
+  address: AddressInfo,
+  config: ResolvedConfig,
+  pluginOptions: Required<PluginOptions>,
+): DevServerUrl {
+  if (config.server?.origin) {
+    return config.server.origin as DevServerUrl;
+  }
+
+  const configHmrProtocol = typeof config.server.hmr === "object" ? config.server.hmr.protocol : null;
+  const clientProtocol = configHmrProtocol ? (configHmrProtocol === "wss" ? "https" : "http") : null;
+  const serverProtocol = config.server.https ? "https" : "http";
+  const protocol = clientProtocol ?? serverProtocol;
+
+  const configHmrHost = typeof config.server.hmr === "object" ? config.server.hmr.host : null;
+  const configHost = typeof config.server.host === "string" ? config.server.host : null;
+  const serverAddress = isIpv6(address) ? `[${address.address}]` : address.address;
+  const host = configHmrHost ?? pluginOptions.viteDevServerHostname ?? configHost ?? serverAddress;
+
+  const configHmrClientPort = typeof config.server.hmr === "object" ? config.server.hmr.clientPort : null;
+  const port = configHmrClientPort ?? address.port;
+
+  return `${protocol}://${host}:${port}`;
+}
+
+export const isAddressInfo = (x: string | AddressInfo | null | undefined): x is AddressInfo => typeof x === "object";

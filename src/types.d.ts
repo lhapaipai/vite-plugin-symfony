@@ -4,6 +4,10 @@
 //   }
 // }
 
+type WithRequiredProperty<Type, Key extends keyof Type> = Type & {
+  [Property in Key]-?: Type[Property];
+};
+
 interface ChunkMetadata {
   importedAssets: Set<string>;
   importedCss: Set<string>;
@@ -84,12 +88,14 @@ type PluginOptions = {
 
   /**
    * Configuration for performing full page refresh on file changes
+   * @default false
    */
   refresh?: boolean | string[];
 
   /**
    * If you set server.host: '0.0.0.0' in your vite.config.js
    * you have to set 'localhost'
+   * @default null
    */
   viteDevServerHostname?: string;
 

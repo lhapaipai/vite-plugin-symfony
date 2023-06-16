@@ -1,6 +1,8 @@
 import { resolve, join, relative, dirname } from "node:path";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import type { AddressInfo } from "node:net";
+import util from "node:util";
+import { fileURLToPath } from "node:url";
 
 import { Plugin, UserConfig, ResolvedConfig } from "vite";
 import sirv from "sirv";
@@ -10,51 +12,19 @@ import colors from "picocolors";
 import type { OutputChunk } from "rollup";
 
 import { getDevEntryPoints, addBuildEntryPoints, entryPath2exportPath } from "./entryPointsHelper";
-import { logConfig, normalizePath, isIpv6, writeJson, emptyDir } from "./utils";
-import { resolvePluginOptions, resolveBase, resolveOutDir } from "./pluginOptions";
-import { fileURLToPath } from "node:url";
-
-/* not imported from vite because we don't want vite in package.json dependancy */
-const FS_PREFIX = `/@fs/`;
-const VALID_ID_PREFIX = `/@id/`;
-const CLIENT_PUBLIC_PATH = `/@vite/client`;
-const ENV_PUBLIC_PATH = `/@vite/env`;
+import {
+  normalizePath,
+  writeJson,
+  emptyDir,
+  isImportRequest,
+  isInternalRequest,
+  resolveDevServerUrl,
+  isAddressInfo,
+} from "./utils";
+import { resolvePluginOptions, resolveBase, resolveOutDir, refreshPaths } from "./pluginOptions";
 
 // src and dist directory are in the same level;
 const pluginDir = dirname(dirname(fileURLToPath(import.meta.url)));
-
-const importQueryRE = /(\?|&)import=?(?:&|$)/;
-const internalPrefixes = [FS_PREFIX, VALID_ID_PREFIX, CLIENT_PUBLIC_PATH, ENV_PUBLIC_PATH];
-const InternalPrefixRE = new RegExp(`^(?:${internalPrefixes.join("|")})`);
-const isImportRequest = (url: string): boolean => importQueryRE.test(url);
-const isInternalRequest = (url: string): boolean => InternalPrefixRE.test(url);
-
-const refreshPaths = ["templates/**/*.twig"];
-
-function resolveDevServerUrl(
-  address: AddressInfo,
-  config: ResolvedConfig,
-  pluginOptions: Required<PluginOptions>,
-): DevServerUrl {
-  if (config.server?.origin) {
-    return config.server.origin as DevServerUrl;
-  }
-
-  const configHmrProtocol = typeof config.server.hmr === "object" ? config.server.hmr.protocol : null;
-  const clientProtocol = configHmrProtocol ? (configHmrProtocol === "wss" ? "https" : "http") : null;
-  const serverProtocol = config.server.https ? "https" : "http";
-  const protocol = clientProtocol ?? serverProtocol;
-
-  const configHmrHost = typeof config.server.hmr === "object" ? config.server.hmr.host : null;
-  const configHost = typeof config.server.host === "string" ? config.server.host : null;
-  const serverAddress = isIpv6(address) ? `[${address.address}]` : address.address;
-  const host = configHmrHost ?? pluginOptions.viteDevServerHostname ?? configHost ?? serverAddress;
-
-  const configHmrClientPort = typeof config.server.hmr === "object" ? config.server.hmr.clientPort : null;
-  const port = configHmrClientPort ?? address.port;
-
-  return `${protocol}://${host}:${port}`;
-}
 
 export default function symfony(userOptions: PluginOptions = {}): Plugin {
   const pluginOptions = resolvePluginOptions(userOptions);
@@ -110,7 +80,6 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
           existsSync(buildDir) && emptyDir(buildDir);
 
           const address = devServer.httpServer?.address();
-          const isAddressInfo = (x: string | AddressInfo | null | undefined): x is AddressInfo => typeof x === "object";
 
           if (!isAddressInfo(address)) {
             console.error("address is not an object open an issue with your address value to fix the problem", address);
@@ -135,8 +104,8 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
 
         if (pluginOptions.verbose) {
           setTimeout(() => {
-            devServer.config.logger.info(`\n${colors.green("➜")}  Vite Config`);
-            logConfig(viteConfig, devServer, 0);
+            devServer.config.logger.info(`\n${colors.green("➜")}  Vite Config \n`);
+            devServer.config.logger.info(util.inspect(viteConfig, { showHidden: false, depth: null, colors: true }));
             devServer.config.logger.info(`\n${colors.green("➜")}  End of config \n`);
           }, 100);
         }
@@ -158,6 +127,8 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
       }
 
       if (pluginOptions.servePublic) {
+        // inspired by https://github.com/vitejs/vite
+        // file: packages/vite/src/node/server/middlewares/static.ts
         const serve = sirv(pluginOptions.publicDirectory, {
           dev: true,
           etag: true,

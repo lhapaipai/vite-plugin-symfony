@@ -2,7 +2,7 @@ import { join } from "node:path";
 
 export function resolvePluginOptions(userConfig: PluginOptions = {}): Required<PluginOptions> {
   if (typeof userConfig.publicDirectory === "string") {
-    userConfig.publicDirectory = userConfig.publicDirectory.trim().replace(/^\/+/, "");
+    userConfig.publicDirectory = userConfig.publicDirectory.trim().replace(/^\/+/, "").replace(/\/+$/, "");
 
     if (userConfig.publicDirectory === "") {
       throw new Error("vite-plugin-symfony: publicDirectory must be a subdirectory. E.g. 'public'.");
@@ -22,19 +22,23 @@ export function resolvePluginOptions(userConfig: PluginOptions = {}): Required<P
   }
 
   return {
-    servePublic: userConfig.servePublic,
-    publicDirectory: userConfig.publicDirectory ?? "public",
     buildDirectory: userConfig.buildDirectory ?? "build",
+    publicDirectory: userConfig.publicDirectory ?? "public",
     refresh: userConfig.refresh ?? false,
-    viteDevServerHostname: userConfig.viteDevServerHostname ?? null,
+    servePublic: userConfig.servePublic,
     verbose: userConfig.verbose === true ?? false,
+    viteDevServerHostname: userConfig.viteDevServerHostname ?? null,
   };
 }
 
-export function resolveBase(config: Required<PluginOptions>): string {
+export function resolveBase(config: WithRequiredProperty<PluginOptions, "buildDirectory">): string {
   return "/" + config.buildDirectory + "/";
 }
 
-export function resolveOutDir(config: Required<PluginOptions>): string {
+export function resolveOutDir(
+  config: WithRequiredProperty<PluginOptions, "publicDirectory" | "buildDirectory">,
+): string {
   return join(config.publicDirectory, config.buildDirectory);
 }
+
+export const refreshPaths = ["templates/**/*.twig"];
