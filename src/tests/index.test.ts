@@ -2,11 +2,11 @@ import { describe, it, vi } from "vitest";
 
 import vitePluginSymfony from "../index";
 import type { OutputChunk, OutputAsset } from "rollup";
-import { type Plugin } from "vite";
 
 import {
   viteBaseConfig,
   asyncDepChunk,
+  pageImports,
   indexCss,
   themeScssChunk,
   themeCss,
@@ -89,6 +89,42 @@ describe("vitePluginSymfony", () => {
             pageAssets: {
               css: ["/build/assets/index-aa7c8190.css"],
               js: ["/build/assets/pageAssets-05cfe79c.js"],
+              legacy: false,
+              preload: [],
+            },
+          },
+          isProd: true,
+          legacy: false,
+          viteServer: false,
+        },
+        null,
+        2,
+      ),
+      type: "asset",
+    });
+
+    const pageImportsPluginInstance = vitePluginSymfony() as any;
+    pageImportsPluginInstance.emitFile = vi.fn();
+    pageImportsPluginInstance.configResolved({
+      ...viteBaseConfig,
+      build: {
+        rollupOptions: {
+          input: {
+            pageImports: "./assets/page/imports/index.js",
+          },
+        },
+      },
+    });
+    pageImportsPluginInstance.generateBundle({ format: "es" }, createBundleObject([pageImports, asyncDepChunk]));
+
+    expect(pageImportsPluginInstance.emitFile).toHaveBeenCalledWith({
+      fileName: "entrypoints.json",
+      source: JSON.stringify(
+        {
+          entryPoints: {
+            pageImports: {
+              css: [],
+              js: ["/build/assets/pageImports-53eb9fd1.js"],
               legacy: false,
               preload: [],
             },

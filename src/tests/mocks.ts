@@ -1,8 +1,5 @@
-import type { OutputChunk, NormalizedOutputOptions } from "rollup";
+import type { OutputChunk } from "rollup";
 import type { ResolvedConfig } from "vite";
-
-import { getFileInfos, getInputRelPath } from "../utils";
-import { relative } from "path";
 
 export const viteBaseConfig = {
   root: "/home/me/project-dir",
@@ -11,7 +8,7 @@ export const viteBaseConfig = {
 
 export const pageImports = {
   type: "chunk",
-  facadeModuleId: "/home/lhapaipai/projets/vite-bundle-dev/assets/page/imports/index.js",
+  facadeModuleId: "/home/me/project-dir/assets/page/imports/index.js",
   fileName: "assets/pageImports-53eb9fd1.js",
   name: "pageImports",
   isEntry: true,

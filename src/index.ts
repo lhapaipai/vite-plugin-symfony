@@ -8,7 +8,7 @@ import sirv from "sirv";
 
 import colors from "picocolors";
 
-import type { RenderedChunk, OutputAsset, NormalizedOutputOptions, OutputChunk, PluginContext } from "rollup";
+import type { RenderedChunk, OutputAsset, NormalizedOutputOptions, OutputChunk } from "rollup";
 
 import { getDevEntryPoints, getBuildEntryPoints } from "./entryPointsHelper";
 import {
