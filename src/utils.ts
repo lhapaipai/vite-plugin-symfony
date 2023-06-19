@@ -1,9 +1,11 @@
-import type { ResolvedConfig } from "vite";
+import { type ResolvedConfig } from "vite";
 import os from "node:os";
 import path from "node:path";
 import type { AddressInfo } from "net";
 import { writeFileSync, rmSync, readdirSync } from "fs";
 import { join } from "path";
+import type { RenderedChunk, OutputChunk, OutputAsset, NormalizedOutputOptions } from "rollup";
+import { resolve, extname, relative } from "path";
 
 export const isWindows = os.platform() === "win32";
 
@@ -16,9 +18,9 @@ export function normalizePath(id: string): string {
 }
 
 export function getLegacyName(name: string) {
-  const ext = path.extname(name);
+  const ext = extname(name);
   const endPos = ext.length !== 0 ? -ext.length : undefined;
-  name = name.slice(0, endPos) + `-legacy` + ext;
+  name = name.slice(0, endPos) + "-legacy" + ext;
   return name;
 }
 
@@ -87,3 +89,143 @@ export function resolveDevServerUrl(
 }
 
 export const isAddressInfo = (x: string | AddressInfo | null | undefined): x is AddressInfo => typeof x === "object";
+
+const CSS_LANGS_RE = /\.(css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:$|\?)/;
+const cssModuleRE = new RegExp(`\\.module${CSS_LANGS_RE.source}`);
+const commonjsProxyRE = /\?commonjs-proxy/;
+const isCSSRequest = (request) => CSS_LANGS_RE.test(request);
+
+export const isCssEntryPoint = (chunk: RenderedChunk & { viteMetadata: ChunkMetadata }) => {
+  if (!chunk.isEntry) {
+    return false;
+  }
+  let isPureCssChunk = true;
+  const ids = Object.keys(chunk.modules);
+  for (const id of ids) {
+    if (!isCSSRequest(id) || cssModuleRE.test(id) || commonjsProxyRE.test(id)) {
+      isPureCssChunk = false;
+    }
+  }
+
+  if (isPureCssChunk) {
+    return chunk?.viteMetadata.importedCss.size === 1 ?? false;
+  }
+
+  return false;
+};
+
+const isCSSEntry = (inputRelPath: string) => !inputRelPath.startsWith("_");
+
+export const getFileInfos = (
+  chunk: (OutputChunk & { viteMetadata: ChunkMetadata }) | OutputAsset,
+  inputRelPath,
+): FileInfos => {
+  const isEntry = (chunk.type === "chunk" && chunk.isEntry) || (chunk.type === "asset" && isCSSEntry(inputRelPath));
+  if (chunk.type === "asset") {
+    if (isEntry) {
+      return {
+        type: "css",
+        inputRelPath,
+        outputRelPath: chunk.fileName,
+        css: [],
+        imports: [],
+        preload: [],
+      };
+    } else {
+      return {
+        type: "asset",
+        inputRelPath,
+        outputRelPath: chunk.fileName,
+        css: [],
+        imports: [],
+        preload: [],
+      };
+    }
+  } else if (chunk.type === "chunk") {
+    const { imports, viteMetadata, fileName } = chunk;
+
+    return {
+      type: "js",
+      inputRelPath,
+      outputRelPath: fileName,
+      css: Array.from(viteMetadata.importedCss),
+      imports: imports,
+      preload: [],
+    };
+  }
+};
+
+export const prepareRollupInputs = (config: ResolvedConfig): ParsedInputs => {
+  const inputParsed: ParsedInputs = {};
+
+  for (const [entryName, inputRelPath] of Object.entries(config.build.rollupOptions.input)) {
+    const entryAbsolutePath = normalizePath(resolve(config.root, inputRelPath));
+
+    if (entryAbsolutePath.indexOf(config.root) !== 0) {
+      console.error("Entry points must be inside Vite root directory");
+      process.exit(1);
+    }
+
+    const extension = extname(inputRelPath);
+
+    const inputType =
+      [".css", ".scss", ".sass", ".less", ".styl", ".stylus", ".postcss"].indexOf(extension) !== -1 ? "css" : "js";
+
+    const entryRelativePath = relative(config.root, entryAbsolutePath);
+
+    inputParsed[entryName] = {
+      inputType,
+      inputRelPath: entryRelativePath,
+    };
+  }
+
+  return inputParsed;
+};
+
+const getKeyByValue = (object, value) => {
+  return Object.keys(object).find((key) => object[key] === value);
+};
+
+export const getInputRelPath = (
+  chunk: OutputAsset | OutputChunk,
+  options: NormalizedOutputOptions,
+  config: ResolvedConfig,
+  inputRelPath2outputRelPath: StringMapping = null,
+): string => {
+  if (chunk.type === "asset" || !chunk.facadeModuleId) {
+    if (inputRelPath2outputRelPath !== null) {
+      const inputRelPath = getKeyByValue(inputRelPath2outputRelPath, chunk.fileName);
+      if (inputRelPath) {
+        return inputRelPath;
+      }
+    }
+
+    return `_${chunk.fileName}`;
+  }
+
+  /**
+   * chunk = { -> js files
+   *   code: <string>,
+   *   facadeModuleId: '/path-to-project/assets/welcome.js',
+   *   fileName: 'assets/welcome-12341234.js',
+   *   name: 'welcome',
+   *   type: 'chunk',
+   *   viteMetadata: {
+   *     importedAssets: <Set>,
+   *     importedCss: <Set>
+   *   }
+   * }
+   */
+
+  if (["vite/legacy-polyfills"].indexOf(chunk.facadeModuleId) !== -1) {
+    return chunk.facadeModuleId;
+  }
+
+  let inputRelPath = normalizePath(path.relative(config.root, chunk.facadeModuleId));
+
+  /* when we generate legacy files, format === 'system'. after format is other value like 'es' */
+  if (options.format === "system" && !chunk.name.includes("-legacy")) {
+    inputRelPath = getLegacyName(inputRelPath);
+  }
+  return inputRelPath.replace(/\0/g, "");
+};

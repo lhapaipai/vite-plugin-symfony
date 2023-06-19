@@ -45,8 +45,8 @@ type ParsedInputs = {
 };
 
 type ParsedEntry = {
-  entryType: "js" | "css";
-  entryPath: string;
+  inputType: "js" | "css";
+  inputRelPath: string;
 };
 
 type EntryFilesMapping = {
@@ -63,6 +63,20 @@ type ManifestEntry = {
 
 type Manifest = {
   [k: string]: ManifestEntry;
+};
+
+type FileInfos = {
+  type: "js" | "css" | "asset";
+  outputRelPath: string;
+  inputRelPath: string | null;
+
+  css: string[];
+  imports: string[];
+  preload: string[];
+};
+
+type GeneratedFiles = {
+  [inputRelPath: string]: FileInfos;
 };
 
 type DevServerUrl = `${"http" | "https"}://${string}:${number}`;

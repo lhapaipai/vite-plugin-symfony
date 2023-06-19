@@ -1,6 +1,5 @@
 import { resolve, join, relative, dirname } from "node:path";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
-import type { AddressInfo } from "node:net";
 import util from "node:util";
 import { fileURLToPath } from "node:url";
 
@@ -9,9 +8,9 @@ import sirv from "sirv";
 
 import colors from "picocolors";
 
-import type { OutputChunk } from "rollup";
+import type { RenderedChunk, OutputAsset, NormalizedOutputOptions, OutputChunk, PluginContext } from "rollup";
 
-import { getDevEntryPoints, addBuildEntryPoints, entryPath2exportPath } from "./entryPointsHelper";
+import { getDevEntryPoints, getBuildEntryPoints } from "./entryPointsHelper";
 import {
   normalizePath,
   writeJson,
@@ -20,6 +19,9 @@ import {
   isInternalRequest,
   resolveDevServerUrl,
   isAddressInfo,
+  isCssEntryPoint,
+  getFileInfos,
+  getInputRelPath,
 } from "./utils";
 import { resolvePluginOptions, resolveBase, resolveOutDir, refreshPaths } from "./pluginOptions";
 
@@ -31,9 +33,11 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
   let viteConfig: ResolvedConfig;
   let viteDevServerUrl: string;
 
-  const entryPointsFilename = "entrypoints.json";
+  const entryPointsBasename = "entrypoints.json";
 
-  const entryPoints: EntryPoints = {};
+  const inputRelPath2outputRelPath: StringMapping = {};
+  const generatedFiles: GeneratedFiles = {};
+
   let outputCount = 0;
 
   return {
@@ -90,7 +94,7 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
 
           const entryPoints = getDevEntryPoints(viteConfig, viteDevServerUrl);
 
-          const entryPointsPath = resolve(viteConfig.root, viteConfig.build.outDir, entryPointsFilename);
+          const entryPointsPath = resolve(viteConfig.root, viteConfig.build.outDir, entryPointsBasename);
           writeJson(entryPointsPath, {
             isProd: false,
             viteServer: {
@@ -161,18 +165,8 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
         });
       }
     },
-    async renderChunk(code, chunk: OutputChunk & { viteMetadata: ChunkMetadata }, opts) {
-      // if entryPoint is not a js file but a css/scss file, only this hook give us the
-      // complete path
-      if (!chunk.isEntry) {
-        return;
-      }
-
-      // facadeModuleId give us the complete path of the entryPoint
-      // -> /path-to-your-project/assets/welcome.js
-      // -> /path-to-your-project/assets/theme.scss
-      const fileExt = chunk.facadeModuleId.split(".").pop();
-      if (["css", "scss", "sass", "less", "styl", "stylus", "postcss"].indexOf(fileExt) === -1) {
+    async renderChunk(code: string, chunk: RenderedChunk & { viteMetadata: ChunkMetadata }) {
+      if (!isCssEntryPoint(chunk)) {
         return;
       }
 
@@ -182,14 +176,21 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
         : chunk.name;
 
       // chunk.viteMetadata.importedCss contains a Set of relative file paths of css files
-      // generated from cssAssetName
+      // in our case we have only one file.
+      // eg: inputRelPath2outputRelPath['assets/theme.scss'] = 'assets/theme-44b5be96.css';
       chunk.viteMetadata.importedCss.forEach((cssBuildFilename) => {
-        // eg: entryPath2exportPath['assets/theme.scss'] = 'assets/theme-44b5be96.css';
-        entryPath2exportPath[cssAssetName] = cssBuildFilename;
+        inputRelPath2outputRelPath[cssAssetName] = cssBuildFilename;
       });
     },
-    generateBundle(options, bundle) {
-      addBuildEntryPoints(options, viteConfig, bundle, entryPoints);
+    generateBundle(
+      options: NormalizedOutputOptions,
+      bundle: { [fileName: string]: OutputAsset | (OutputChunk & { viteMetadata: ChunkMetadata }) },
+    ) {
+      for (const chunk of Object.values(bundle)) {
+        const inputRelPath = getInputRelPath(chunk, options, viteConfig);
+        inputRelPath2outputRelPath[inputRelPath] = chunk.fileName;
+        generatedFiles[chunk.fileName] = getFileInfos(chunk, inputRelPath);
+      }
 
       outputCount++;
       const output = viteConfig.build.rollupOptions?.output;
@@ -199,19 +200,21 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
       const outputLength = Array.isArray(output) ? output.length : 1;
 
       if (outputCount >= outputLength) {
+        const entryPoints = getBuildEntryPoints(generatedFiles, viteConfig, inputRelPath2outputRelPath);
+
         this.emitFile({
-          fileName: entryPointsFilename,
-          type: "asset",
+          fileName: entryPointsBasename,
           source: JSON.stringify(
             {
-              isProd: true,
-              viteServer: false,
               entryPoints,
+              isProd: true,
               legacy: typeof entryPoints["polyfills-legacy"] !== "undefined",
+              viteServer: false,
             },
             null,
             2,
           ),
+          type: "asset",
         });
       }
     },

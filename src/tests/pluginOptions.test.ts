@@ -1,5 +1,5 @@
 import { describe, it } from "vitest";
-import { resolvePluginOptions, resolveBase, resolveOutDir } from "./pluginOptions";
+import { resolvePluginOptions, resolveBase, resolveOutDir } from "../pluginOptions";
 
 describe("resolvePluginOptions", () => {
   it("resolves with default options when no config", ({ expect }) => {
