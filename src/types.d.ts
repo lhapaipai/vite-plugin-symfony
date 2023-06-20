@@ -6,12 +6,12 @@ declare module "rollup" {
   }
 }
 
-interface ChunkMetadata {
+export interface ChunkMetadata {
   importedAssets: Set<string>;
   importedCss: Set<string>;
 }
 
-type EntryPointsFile = {
+export type EntryPointsFile = {
   isProd: boolean;
   viteServer:
     | {
@@ -24,35 +24,35 @@ type EntryPointsFile = {
   legacy: boolean;
 };
 
-type EntryPoint = {
+export type EntryPoint = {
   assets?: string[];
   js?: string[];
   css?: string[];
   preload?: string[];
   legacy?: boolean | string;
 };
-type EntryPoints = {
+export type EntryPoints = {
   [k: string]: EntryPoint;
 };
 
-type StringMapping = {
+export type StringMapping = {
   [k: string]: string;
 };
 
-type ParsedInputs = {
+export type ParsedInputs = {
   [k: string]: ParsedEntry;
 };
 
-type ParsedEntry = {
+export type ParsedEntry = {
   inputType: "js" | "css";
   inputRelPath: string;
 };
 
-type EntryFilesMapping = {
+export type EntryFilesMapping = {
   [k: string]: string;
 };
 
-type ManifestEntry = {
+export type ManifestEntry = {
   file: string;
   src?: string;
   isEntry?: boolean;
@@ -60,13 +60,13 @@ type ManifestEntry = {
   css?: string[];
 };
 
-type Manifest = {
+export type Manifest = {
   [k: string]: ManifestEntry;
 };
 
-type FileInfos = JsFileInfos | CSSFileInfos | AssetFileInfos;
+export type FileInfos = JsFileInfos | CSSFileInfos | AssetFileInfos;
 
-type JsFileInfos = {
+export type JsFileInfos = {
   type: "js";
   outputRelPath: string;
   inputRelPath: string | null;
@@ -79,26 +79,26 @@ type JsFileInfos = {
 
   css: string[];
 };
-type CSSFileInfos = {
+export type CSSFileInfos = {
   type: "css";
   outputRelPath: string;
   inputRelPath: string | null;
 
   css: string[];
 };
-type AssetFileInfos = {
+export type AssetFileInfos = {
   type: "asset";
   outputRelPath: string;
   inputRelPath: string | null;
 };
 
-type GeneratedFiles = {
+export type GeneratedFiles = {
   [inputRelPath: string]: FileInfos;
 };
 
-type DevServerUrl = `${"http" | "https"}://${string}:${number}`;
+export type DevServerUrl = `${"http" | "https"}://${string}:${number}`;
 
-type VitePluginSymfonyOptions = {
+export type VitePluginSymfonyOptions = {
   /**
    * Web directory root
    * Relative file path from project directory root.
