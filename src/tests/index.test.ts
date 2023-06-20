@@ -15,6 +15,8 @@ import {
   legacyPolyfills,
   pageAssets,
   logoPng,
+  circular1Js,
+  circular2Js,
 } from "./mocks";
 
 function createBundleObject(files: (OutputChunk | OutputAsset)[]) {
@@ -175,6 +177,46 @@ describe("vitePluginSymfony", () => {
               js: [],
               legacy: false,
               preload: [],
+            },
+          },
+          isProd: true,
+          legacy: false,
+          viteServer: false,
+        },
+        null,
+        2,
+      ),
+      type: "asset",
+    });
+  });
+
+  it("generate correct circular build entrypoints", ({ expect }) => {
+    const circularPluginInstance = vitePluginSymfony() as any;
+    circularPluginInstance.emitFile = vi.fn();
+    circularPluginInstance.configResolved({
+      ...viteBaseConfig,
+      build: {
+        rollupOptions: {
+          input: {
+            circular: "./assets/page/circular1.js",
+          },
+        },
+      },
+    });
+
+    circularPluginInstance.generateBundle({ format: "es" }, createBundleObject([circular1Js, circular2Js]));
+
+    expect(circularPluginInstance.emitFile).toHaveBeenCalledWith({
+      fileName: "entrypoints.json",
+      source: JSON.stringify(
+        {
+          entryPoints: {
+            circular: {
+              assets: [],
+              css: [],
+              js: ["/build/assets/circular1-56785678.js"],
+              legacy: false,
+              preload: ["/build/assets/circular2-12341234.js"],
             },
           },
           isProd: true,

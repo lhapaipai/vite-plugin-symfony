@@ -1,3 +1,11 @@
+## v3.3.1
+
+- fix circular reference with imports.
+
+## v3.3.0
+
+- add tests
+
 ## v0.6.3
 
 - takes into account vite legacy plugin.

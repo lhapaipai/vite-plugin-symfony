@@ -137,3 +137,33 @@ export const logoPng = {
   source: "Content",
   type: "asset",
 } as unknown as OutputAsset;
+
+export const circular1Js = {
+  dynamicImports: [],
+  type: "chunk",
+  facadeModuleId: "/home/me/project-dir/assets/page/circular1.js",
+  fileName: "assets/circular1-56785678.js",
+  name: "welcome",
+  isEntry: true,
+  imports: ["assets/circular2-12341234.js"],
+  viteMetadata: {
+    importedCss: new Set(),
+    importedAssets: new Set(),
+  },
+  code: 'console.log("welcome.js !");\n',
+} as unknown as OutputChunk & { viteMetadata: ChunkMetadata };
+
+export const circular2Js = {
+  dynamicImports: [],
+  type: "chunk",
+  facadeModuleId: "/home/me/project-dir/assets/page/circular2.js",
+  fileName: "assets/circular2-12341234.js",
+  name: "welcome",
+  isEntry: true,
+  imports: ["assets/circular1-56785678.js"],
+  viteMetadata: {
+    importedCss: new Set(),
+    importedAssets: new Set(),
+  },
+  code: 'console.log("welcome.js !");\n',
+} as unknown as OutputChunk & { viteMetadata: ChunkMetadata };

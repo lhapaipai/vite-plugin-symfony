@@ -64,17 +64,25 @@ export const resolveEntrypoint = (
   generatedFiles: GeneratedFiles,
   config: ResolvedConfig,
   legacyEntryName: boolean | string,
+  resolvedImportOutputRelPaths: string[] = [],
 ): EntryPoint => {
   const assets: string[] = [];
   const css: string[] = [];
   const js: string[] = [];
   const preload: string[] = [];
 
+  resolvedImportOutputRelPaths.push(fileInfos.outputRelPath);
+
   if (fileInfos.type === "js") {
-    for (const importEntryName of fileInfos.imports) {
-      const importFileInfos = generatedFiles[importEntryName];
+    for (const importOutputRelPath of fileInfos.imports) {
+      if (resolvedImportOutputRelPaths.indexOf(importOutputRelPath) !== -1) {
+        continue;
+      }
+      resolvedImportOutputRelPaths.push(importOutputRelPath);
+
+      const importFileInfos = generatedFiles[importOutputRelPath];
       if (!importFileInfos) {
-        throw new Error(`Unable to find ${importEntryName}`);
+        throw new Error(`Unable to find ${importOutputRelPath}`);
       }
 
       const {
@@ -82,16 +90,18 @@ export const resolveEntrypoint = (
         css: importCss,
         preload: importPreload,
         js: importJs,
-      } = resolveEntrypoint(importFileInfos, generatedFiles, config, false);
+      } = resolveEntrypoint(importFileInfos, generatedFiles, config, false, resolvedImportOutputRelPaths);
 
       for (const dependency of importCss) {
         if (css.indexOf(dependency) === -1) {
           css.push(dependency);
         }
       }
+
+      // imports are preloaded not js files
       for (const dependency of importJs) {
-        if (js.indexOf(dependency) === -1) {
-          js.push(dependency);
+        if (preload.indexOf(dependency) === -1) {
+          preload.push(dependency);
         }
       }
       for (const dependency of importPreload) {
@@ -106,20 +116,28 @@ export const resolveEntrypoint = (
       }
     }
 
-    fileInfos.assets.forEach((assetsFilePath) => {
-      assets.push(`${config.base}${assetsFilePath}`);
+    fileInfos.assets.forEach((dependency) => {
+      if (assets.indexOf(dependency) === -1) {
+        assets.push(`${config.base}${dependency}`);
+      }
     });
-    fileInfos.js.forEach((jsFilePath) => {
-      js.push(`${config.base}${jsFilePath}`);
+    fileInfos.js.forEach((dependency) => {
+      if (js.indexOf(dependency) === -1) {
+        js.push(`${config.base}${dependency}`);
+      }
     });
-    fileInfos.preload.forEach((preloadFilePath) => {
-      preload.push(`${config.base}${preloadFilePath}`);
+    fileInfos.preload.forEach((dependency) => {
+      if (preload.indexOf(dependency) === -1) {
+        preload.push(`${config.base}${dependency}`);
+      }
     });
   }
 
   if (fileInfos.type === "js" || fileInfos.type === "css") {
-    fileInfos.css.forEach((cssFilePath) => {
-      css.push(`${config.base}${cssFilePath}`);
+    fileInfos.css.forEach((dependency) => {
+      if (css.indexOf(dependency) === -1) {
+        css.push(`${config.base}${dependency}`);
+      }
     });
   }
 
