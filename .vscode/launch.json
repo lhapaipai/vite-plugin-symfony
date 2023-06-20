@@ -11,6 +11,9 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
+      "args": [
+        "index"
+      ],
       "type": "node",
       "cwd": "${workspaceRoot}",
       "env": {

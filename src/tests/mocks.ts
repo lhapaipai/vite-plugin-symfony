@@ -1,4 +1,4 @@
-import type { OutputChunk } from "rollup";
+import type { OutputChunk, OutputAsset } from "rollup";
 import type { ResolvedConfig } from "vite";
 
 export const viteBaseConfig = {
@@ -7,6 +7,7 @@ export const viteBaseConfig = {
 } as unknown as ResolvedConfig;
 
 export const pageImports = {
+  dynamicImports: ["assets/async-dep-e2ac9f96.js"],
   type: "chunk",
   facadeModuleId: "/home/me/project-dir/assets/page/imports/index.js",
   fileName: "assets/pageImports-53eb9fd1.js",
@@ -21,6 +22,7 @@ export const pageImports = {
 } as unknown as OutputChunk & { viteMetadata: ChunkMetadata };
 
 export const asyncDepChunk = {
+  dynamicImports: [],
   type: "chunk",
   facadeModuleId: "/home/me/project-dir/assets/lib/async-dep.js",
   fileName: "assets/async-dep-e2ac9f96.js",
@@ -39,9 +41,10 @@ export const indexCss = {
   needsCodeReference: false,
   source: "body {}",
   type: "asset",
-} as unknown as OutputChunk & { viteMetadata: ChunkMetadata };
+} as unknown as OutputAsset;
 
 export const themeScssChunk = {
+  dynamicImports: [],
   facadeModuleId: "/home/me/project-dir/assets/theme.scss",
   fileName: "assets/theme-!~{001}~.js",
   name: "theme",
@@ -64,9 +67,10 @@ export const themeCss = {
   needsCodeReference: false,
   source: "body {}",
   type: "asset",
-} as unknown as OutputChunk & { viteMetadata: ChunkMetadata };
+} as unknown as OutputAsset;
 
 export const welcomeJs = {
+  dynamicImports: [],
   type: "chunk",
   facadeModuleId: "/home/me/project-dir/assets/page/welcome/index.js",
   fileName: "assets/welcome-1e67239d.js",
@@ -81,6 +85,7 @@ export const welcomeJs = {
 } as unknown as OutputChunk & { viteMetadata: ChunkMetadata };
 
 export const welcomeLegacyJs = {
+  dynamicImports: [],
   type: "chunk",
   facadeModuleId: "/home/me/project-dir/assets/page/welcome/index.js",
   fileName: "assets/welcome-legacy-64979d13.js",
@@ -95,8 +100,9 @@ export const welcomeLegacyJs = {
 } as unknown as OutputChunk & { viteMetadata: ChunkMetadata };
 
 export const legacyPolyfills = {
+  dynamicImports: [],
   type: "chunk",
-  facadeModuleId: "vite/legacy-polyfills",
+  facadeModuleId: "\0vite/legacy-polyfills",
   fileName: "assets/polyfills-legacy-40963d34.js",
   name: "polyfills",
   isEntry: true,
@@ -109,6 +115,7 @@ export const legacyPolyfills = {
 } as unknown as OutputChunk & { viteMetadata: ChunkMetadata };
 
 export const pageAssets = {
+  dynamicImports: [],
   type: "chunk",
   facadeModuleId: "/home/me/project-dir/assets/page/assets/index.js",
   fileName: "assets/pageAssets-05cfe79c.js",
@@ -128,4 +135,4 @@ export const logoPng = {
   needsCodeReference: false,
   source: "Content",
   type: "asset",
-} as unknown as OutputChunk & { viteMetadata: ChunkMetadata };
+} as unknown as OutputAsset;

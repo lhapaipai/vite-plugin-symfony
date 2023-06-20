@@ -63,6 +63,13 @@ const internalPrefixes = [FS_PREFIX, VALID_ID_PREFIX, CLIENT_PUBLIC_PATH, ENV_PU
 const InternalPrefixRE = new RegExp(`^(?:${internalPrefixes.join("|")})`);
 export const isInternalRequest = (url: string): boolean => InternalPrefixRE.test(url);
 
+const CSS_LANGS_RE = /\.(css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:$|\?)/;
+const cssModuleRE = new RegExp(`\\.module${CSS_LANGS_RE.source}`);
+const commonjsProxyRE = /\?commonjs-proxy/;
+const isCSSRequest = (request) => CSS_LANGS_RE.test(request);
+
+const polyfillId = "\0vite/legacy-polyfills";
+
 export function resolveDevServerUrl(
   address: AddressInfo,
   config: ResolvedConfig,
@@ -90,11 +97,6 @@ export function resolveDevServerUrl(
 
 export const isAddressInfo = (x: string | AddressInfo | null | undefined): x is AddressInfo => typeof x === "object";
 
-const CSS_LANGS_RE = /\.(css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:$|\?)/;
-const cssModuleRE = new RegExp(`\\.module${CSS_LANGS_RE.source}`);
-const commonjsProxyRE = /\?commonjs-proxy/;
-const isCSSRequest = (request) => CSS_LANGS_RE.test(request);
-
 export const isCssEntryPoint = (chunk: RenderedChunk & { viteMetadata: ChunkMetadata }) => {
   if (!chunk.isEntry) {
     return false;
@@ -114,43 +116,37 @@ export const isCssEntryPoint = (chunk: RenderedChunk & { viteMetadata: ChunkMeta
   return false;
 };
 
-const isCSSEntry = (inputRelPath: string) => !inputRelPath.startsWith("_");
-
 export const getFileInfos = (
   chunk: (OutputChunk & { viteMetadata: ChunkMetadata }) | OutputAsset,
   inputRelPath,
 ): FileInfos => {
-  const isEntry = (chunk.type === "chunk" && chunk.isEntry) || (chunk.type === "asset" && isCSSEntry(inputRelPath));
   if (chunk.type === "asset") {
-    if (isEntry) {
+    if (chunk.fileName.endsWith(".css")) {
       return {
-        type: "css",
+        css: [chunk.fileName],
         inputRelPath,
         outputRelPath: chunk.fileName,
-        css: [],
-        imports: [],
-        preload: [],
+        type: "css",
       };
     } else {
       return {
-        type: "asset",
         inputRelPath,
         outputRelPath: chunk.fileName,
-        css: [],
-        imports: [],
-        preload: [],
+        type: "asset",
       };
     }
   } else if (chunk.type === "chunk") {
-    const { imports, viteMetadata, fileName } = chunk;
+    const { imports, dynamicImports, viteMetadata, fileName } = chunk;
 
     return {
-      type: "js",
-      inputRelPath,
-      outputRelPath: fileName,
+      assets: Array.from(viteMetadata.importedAssets),
       css: Array.from(viteMetadata.importedCss),
       imports: imports,
-      preload: [],
+      inputRelPath,
+      js: [fileName],
+      outputRelPath: fileName,
+      preload: dynamicImports,
+      type: "js",
     };
   }
 };
@@ -203,22 +199,8 @@ export const getInputRelPath = (
     return `_${chunk.fileName}`;
   }
 
-  /**
-   * chunk = { -> js files
-   *   code: <string>,
-   *   facadeModuleId: '/path-to-project/assets/welcome.js',
-   *   fileName: 'assets/welcome-12341234.js',
-   *   name: 'welcome',
-   *   type: 'chunk',
-   *   viteMetadata: {
-   *     importedAssets: <Set>,
-   *     importedCss: <Set>
-   *   }
-   * }
-   */
-
-  if (["vite/legacy-polyfills"].indexOf(chunk.facadeModuleId) !== -1) {
-    return chunk.facadeModuleId;
+  if ([polyfillId].indexOf(chunk.facadeModuleId) !== -1) {
+    return chunk.facadeModuleId.replace(/\0/g, "");
   }
 
   let inputRelPath = normalizePath(path.relative(config.root, chunk.facadeModuleId));

@@ -18,41 +18,40 @@ export const getBuildEntryPoints = (
   inputRelPath2outputRelPath: StringMapping,
 ): EntryPoints => {
   const entryPoints: EntryPoints = {};
+  let hasLegacyEntryPoint = false;
 
   /** get an Array of entryPoints from build.rollupOptions.input inside vite config file  */
   const entryFiles = prepareRollupInputs(viteConfig);
-  let hasLegacyEntries = false;
+
   for (const [entryName, entry] of Object.entries(entryFiles)) {
     const outputRelPath = inputRelPath2outputRelPath[entry.inputRelPath];
     const fileInfos = generatedFiles[outputRelPath];
 
     if (!outputRelPath || !fileInfos) {
       console.error("unable to map generatedFile", entry, outputRelPath, fileInfos, inputRelPath2outputRelPath);
+      process.exit(1);
     }
 
-    const legacyEntryPath = getLegacyName(entry.inputRelPath);
-    const legacyOutputRelPath = inputRelPath2outputRelPath[legacyEntryPath];
-    const legacyFileInfos = generatedFiles[legacyOutputRelPath];
+    const legacyInputRelPath = getLegacyName(entry.inputRelPath);
+    const legacyFileInfos = generatedFiles[inputRelPath2outputRelPath[legacyInputRelPath]] ?? null;
 
-    const legacyEntryName = `${entryName}-legacy`;
+    if (legacyFileInfos) {
+      hasLegacyEntryPoint = true;
+      entryPoints[`${entryName}-legacy`] = resolveEntrypoint(legacyFileInfos, generatedFiles, viteConfig, false);
+    }
 
     entryPoints[entryName] = resolveEntrypoint(
       fileInfos,
       generatedFiles,
       viteConfig,
-      legacyFileInfos ? legacyEntryName : false,
-      true,
+      hasLegacyEntryPoint ? `${entryName}-legacy` : false,
     );
-    if (legacyFileInfos) {
-      hasLegacyEntries = true;
-      entryPoints[legacyEntryName] = resolveEntrypoint(legacyFileInfos, generatedFiles, viteConfig, false, true);
-    }
   }
 
-  if (hasLegacyEntries && inputRelPath2outputRelPath["vite/legacy-polyfills"]) {
-    const fileInfos = generatedFiles[inputRelPath2outputRelPath["vite/legacy-polyfills"]];
+  if (hasLegacyEntryPoint && inputRelPath2outputRelPath["vite/legacy-polyfills"]) {
+    const fileInfos = generatedFiles[inputRelPath2outputRelPath["vite/legacy-polyfills"]] ?? null;
     if (fileInfos) {
-      entryPoints["polyfills-legacy"] = resolveEntrypoint(fileInfos, generatedFiles, viteConfig, false, true);
+      entryPoints["polyfills-legacy"] = resolveEntrypoint(fileInfos, generatedFiles, viteConfig, false);
     }
   }
 
@@ -64,10 +63,10 @@ export const resolveEntrypoint = (
   generatedFiles: GeneratedFiles,
   config: ResolvedConfig,
   legacyEntryName: boolean | string,
-  isEntryPoint: boolean,
 ): EntryPoint => {
-  const js: string[] = [];
+  const assets: string[] = [];
   const css: string[] = [];
+  const js: string[] = [];
   const preload: string[] = [];
 
   if (fileInfos.type === "js") {
@@ -76,17 +75,22 @@ export const resolveEntrypoint = (
       if (!importFileInfos) {
         throw new Error(`Unable to find ${importEntryName}`);
       }
-      const { css: importCss, preload: importPreload } = resolveEntrypoint(
-        importFileInfos,
-        generatedFiles,
-        config,
-        false,
-        false,
-      );
+
+      const {
+        assets: importAssets,
+        css: importCss,
+        preload: importPreload,
+        js: importJs,
+      } = resolveEntrypoint(importFileInfos, generatedFiles, config, false);
 
       for (const dependency of importCss) {
         if (css.indexOf(dependency) === -1) {
           css.push(dependency);
+        }
+      }
+      for (const dependency of importJs) {
+        if (js.indexOf(dependency) === -1) {
+          js.push(dependency);
         }
       }
       for (const dependency of importPreload) {
@@ -94,24 +98,29 @@ export const resolveEntrypoint = (
           preload.push(dependency);
         }
       }
+      for (const dependency of importAssets) {
+        if (assets.indexOf(dependency) === -1) {
+          assets.push(dependency);
+        }
+      }
     }
+
+    fileInfos.assets.forEach((assetsFilePath) => {
+      assets.push(`${config.base}${assetsFilePath}`);
+    });
+    fileInfos.js.forEach((jsFilePath) => {
+      js.push(`${config.base}${jsFilePath}`);
+    });
+    fileInfos.preload.forEach((preloadFilePath) => {
+      preload.push(`${config.base}${preloadFilePath}`);
+    });
   }
 
-  const filePath = `${config.base}${fileInfos.outputRelPath}`;
-
-  if (isEntryPoint) {
-    if (fileInfos.type === "js") {
-      js.push(filePath);
-    } else {
-      css.push(filePath);
-    }
-  } else if (preload.indexOf(filePath) === -1) {
-    preload.push(filePath);
+  if (fileInfos.type === "js" || fileInfos.type === "css") {
+    fileInfos.css.forEach((cssFilePath) => {
+      css.push(`${config.base}${cssFilePath}`);
+    });
   }
 
-  fileInfos.css.forEach((cssFilePath) => {
-    css.push(`${config.base}${cssFilePath}`);
-  });
-
-  return { css, js, legacy: legacyEntryName, preload };
+  return { assets, css, js, legacy: legacyEntryName, preload };
 };

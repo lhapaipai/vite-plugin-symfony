@@ -27,6 +27,7 @@ type EntryPointsFile = {
 };
 
 type EntryPoint = {
+  assets?: string[];
   js?: string[];
   css?: string[];
   preload?: string[];
@@ -65,14 +66,32 @@ type Manifest = {
   [k: string]: ManifestEntry;
 };
 
-type FileInfos = {
-  type: "js" | "css" | "asset";
+type FileInfos = JsFileInfos | CSSFileInfos | AssetFileInfos;
+
+type JsFileInfos = {
+  type: "js";
+  outputRelPath: string;
+  inputRelPath: string | null;
+
+  imports: string[];
+
+  assets: string[];
+  js: string[];
+  preload: string[];
+
+  css: string[];
+};
+type CSSFileInfos = {
+  type: "css";
   outputRelPath: string;
   inputRelPath: string | null;
 
   css: string[];
-  imports: string[];
-  preload: string[];
+};
+type AssetFileInfos = {
+  type: "asset";
+  outputRelPath: string;
+  inputRelPath: string | null;
 };
 
 type GeneratedFiles = {

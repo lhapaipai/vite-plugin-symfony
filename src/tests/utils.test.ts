@@ -34,9 +34,13 @@ describe("getFileInfos", () => {
   it("parse correctly an output", ({ expect }) => {
     expect(getFileInfos(asyncDepChunk, "assets/lib/async-dep.js")).toMatchInlineSnapshot(`
       {
+        "assets": [],
         "css": [],
         "imports": [],
         "inputRelPath": "assets/lib/async-dep.js",
+        "js": [
+          "assets/async-dep-e2ac9f96.js",
+        ],
         "outputRelPath": "assets/async-dep-e2ac9f96.js",
         "preload": [],
         "type": "js",
@@ -44,39 +48,40 @@ describe("getFileInfos", () => {
     `);
     expect(getFileInfos(indexCss, "_assets/index-aa7c8190.css")).toMatchInlineSnapshot(`
       {
-        "css": [],
-        "imports": [],
+        "css": [
+          "assets/index-aa7c8190.css",
+        ],
         "inputRelPath": "_assets/index-aa7c8190.css",
         "outputRelPath": "assets/index-aa7c8190.css",
-        "preload": [],
-        "type": "asset",
+        "type": "css",
       }
     `);
     expect(getFileInfos(themeCss, "assets/theme.scss")).toMatchInlineSnapshot(`
       {
-        "css": [],
-        "imports": [],
+        "css": [
+          "assets/theme-44b5be96.css",
+        ],
         "inputRelPath": "assets/theme.scss",
         "outputRelPath": "assets/theme-44b5be96.css",
-        "preload": [],
         "type": "css",
       }
     `);
     expect(getFileInfos(logoPng, "_assets/logo-d015cc3f.png")).toMatchInlineSnapshot(`
       {
-        "css": [],
-        "imports": [],
         "inputRelPath": "_assets/logo-d015cc3f.png",
         "outputRelPath": "assets/logo-d015cc3f.png",
-        "preload": [],
         "type": "asset",
       }
     `);
     expect(getFileInfos(welcomeJs, "assets/page/welcome/index.js")).toMatchInlineSnapshot(`
       {
+        "assets": [],
         "css": [],
         "imports": [],
         "inputRelPath": "assets/page/welcome/index.js",
+        "js": [
+          "assets/welcome-1e67239d.js",
+        ],
         "outputRelPath": "assets/welcome-1e67239d.js",
         "preload": [],
         "type": "js",
@@ -84,11 +89,17 @@ describe("getFileInfos", () => {
     `);
     expect(getFileInfos(pageAssets, "assets/page/assets/index.js")).toMatchInlineSnapshot(`
       {
+        "assets": [
+          "assets/logo-d015cc3f.png",
+        ],
         "css": [
           "assets/index-aa7c8190.css",
         ],
         "imports": [],
         "inputRelPath": "assets/page/assets/index.js",
+        "js": [
+          "assets/pageAssets-05cfe79c.js",
+        ],
         "outputRelPath": "assets/pageAssets-05cfe79c.js",
         "preload": [],
         "type": "js",
@@ -96,9 +107,13 @@ describe("getFileInfos", () => {
     `);
     expect(getFileInfos(welcomeLegacyJs, "assets/page/welcome/index-legacy.js")).toMatchInlineSnapshot(`
       {
+        "assets": [],
         "css": [],
         "imports": [],
         "inputRelPath": "assets/page/welcome/index-legacy.js",
+        "js": [
+          "assets/welcome-legacy-64979d13.js",
+        ],
         "outputRelPath": "assets/welcome-legacy-64979d13.js",
         "preload": [],
         "type": "js",
@@ -106,9 +121,13 @@ describe("getFileInfos", () => {
     `);
     expect(getFileInfos(legacyPolyfills, "vite/legacy-polyfills")).toMatchInlineSnapshot(`
       {
+        "assets": [],
         "css": [],
         "imports": [],
         "inputRelPath": "vite/legacy-polyfills",
+        "js": [
+          "assets/polyfills-legacy-40963d34.js",
+        ],
         "outputRelPath": "assets/polyfills-legacy-40963d34.js",
         "preload": [],
         "type": "js",
