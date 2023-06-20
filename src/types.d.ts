@@ -1,12 +1,10 @@
-// declare module 'rollup' {
-//   export interface RenderedChunk {
-//     viteMetadata: ChunkMetadata
-//   }
-// }
+import "rollup";
 
-type WithRequiredProperty<Type, Key extends keyof Type> = Type & {
-  [Property in Key]-?: Type[Property];
-};
+declare module "rollup" {
+  export interface RenderedChunk {
+    viteMetadata?: ChunkMetadata;
+  }
+}
 
 interface ChunkMetadata {
   importedAssets: Set<string>;
@@ -100,41 +98,57 @@ type GeneratedFiles = {
 
 type DevServerUrl = `${"http" | "https"}://${string}:${number}`;
 
-type PluginOptions = {
+type VitePluginSymfonyOptions = {
   /**
-   * Serve your assets which are defined in your public directory
-   * @default true
-   */
-  servePublic?: boolean;
-
-  /**
-   * Symfony's public directory
+   * Web directory root
+   * Relative file path from project directory root.
    * @default 'public'
    */
-  publicDirectory?: string;
+  publicDirectory: string;
 
   /**
-   * The build directory relative to publicDirectory where compiled assets should be written
+   * Build directory (or path)
+   * Relative path from web directory root
    * @default 'build'
    */
-  buildDirectory?: string;
+  buildDirectory: string;
 
   /**
-   * Configuration for performing full page refresh on file changes
-   * @default false
+   * By default vite-plugin-symfony set vite option publicDir to false.
+   * Because we don't want symfony entrypoint (index.php) and other files to
+   * be copied into the build directory.
+   * Related to this issue : https://github.com/lhapaipai/vite-bundle/issues/17
+   *
+   * Vite plugin Symfony use sirv to serve public directory.
+   *
+   * If you want to force vite option publicDir to true, set servePublic to false.
+   *
+   * @default true
    */
-  refresh?: boolean | string[];
+  servePublic: boolean;
 
   /**
-   * If you set server.host: '0.0.0.0' in your vite.config.js
-   * you have to set 'localhost'
+   * Refresh vite dev server when your twig templates are updated.
+   *  - array of paths to files to be watched, or glob patterns
+   *  - true : equivalent to ["templates/**\/*.twig"]
+   * @default false
+   *
+   * for additional glob documentation, check out low-level library picomatch : https://github.com/micromatch/picomatch
+   */
+  refresh: boolean | string[];
+
+  /**
+   * If you specify vite `server.host` option to '0.0.0.0' (usage with Docker)
+   * You probably need to configure your `viteDevServerHostname` to 'localhost'.
+   * Related to this issue : https://github.com/lhapaipai/vite-bundle/issues/26
+   *
    * @default null
    */
-  viteDevServerHostname?: string;
+  viteDevServerHostname: null | string;
 
   /**
    * Show vite resolved config
    * @default false
    */
-  verbose?: boolean;
+  debug: boolean;
 };

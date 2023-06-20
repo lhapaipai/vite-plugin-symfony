@@ -1,5 +1,6 @@
 import type { OutputChunk, OutputAsset } from "rollup";
 import type { ResolvedConfig } from "vite";
+import { ChunkMetadata } from "../types";
 
 export const viteBaseConfig = {
   root: "/home/me/project-dir",

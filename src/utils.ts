@@ -6,6 +6,7 @@ import { writeFileSync, rmSync, readdirSync } from "fs";
 import { join } from "path";
 import type { RenderedChunk, OutputChunk, OutputAsset, NormalizedOutputOptions } from "rollup";
 import { resolve, extname, relative } from "path";
+import { StringMapping, DevServerUrl, VitePluginSymfonyOptions, FileInfos, ParsedInputs } from "./types";
 
 export const isWindows = os.platform() === "win32";
 
@@ -73,7 +74,7 @@ const polyfillId = "\0vite/legacy-polyfills";
 export function resolveDevServerUrl(
   address: AddressInfo,
   config: ResolvedConfig,
-  pluginOptions: Required<PluginOptions>,
+  pluginOptions: Required<VitePluginSymfonyOptions>,
 ): DevServerUrl {
   if (config.server?.origin) {
     return config.server.origin as DevServerUrl;
@@ -97,7 +98,7 @@ export function resolveDevServerUrl(
 
 export const isAddressInfo = (x: string | AddressInfo | null | undefined): x is AddressInfo => typeof x === "object";
 
-export const isCssEntryPoint = (chunk: RenderedChunk & { viteMetadata: ChunkMetadata }) => {
+export const isCssEntryPoint = (chunk: RenderedChunk) => {
   if (!chunk.isEntry) {
     return false;
   }
@@ -116,10 +117,7 @@ export const isCssEntryPoint = (chunk: RenderedChunk & { viteMetadata: ChunkMeta
   return false;
 };
 
-export const getFileInfos = (
-  chunk: (OutputChunk & { viteMetadata: ChunkMetadata }) | OutputAsset,
-  inputRelPath,
-): FileInfos => {
+export const getFileInfos = (chunk: OutputChunk | OutputAsset, inputRelPath): FileInfos => {
   if (chunk.type === "asset") {
     if (chunk.fileName.endsWith(".css")) {
       return {

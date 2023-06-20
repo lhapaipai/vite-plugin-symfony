@@ -1,6 +1,7 @@
 import { join } from "node:path";
+import { VitePluginSymfonyOptions } from "./types";
 
-export function resolvePluginOptions(userConfig: PluginOptions = {}): Required<PluginOptions> {
+export function resolvePluginOptions(userConfig: Partial<VitePluginSymfonyOptions> = {}): VitePluginSymfonyOptions {
   if (typeof userConfig.publicDirectory === "string") {
     userConfig.publicDirectory = userConfig.publicDirectory.trim().replace(/^\/+/, "").replace(/\/+$/, "");
 
@@ -26,18 +27,16 @@ export function resolvePluginOptions(userConfig: PluginOptions = {}): Required<P
     publicDirectory: userConfig.publicDirectory ?? "public",
     refresh: userConfig.refresh ?? false,
     servePublic: userConfig.servePublic,
-    verbose: userConfig.verbose === true ?? false,
+    debug: userConfig.debug === true ?? false,
     viteDevServerHostname: userConfig.viteDevServerHostname ?? null,
   };
 }
 
-export function resolveBase(config: WithRequiredProperty<PluginOptions, "buildDirectory">): string {
+export function resolveBase(config: VitePluginSymfonyOptions): string {
   return "/" + config.buildDirectory + "/";
 }
 
-export function resolveOutDir(
-  config: WithRequiredProperty<PluginOptions, "publicDirectory" | "buildDirectory">,
-): string {
+export function resolveOutDir(config: VitePluginSymfonyOptions): string {
   return join(config.publicDirectory, config.buildDirectory);
 }
 

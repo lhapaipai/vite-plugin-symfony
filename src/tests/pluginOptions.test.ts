@@ -1,15 +1,16 @@
 import { describe, it } from "vitest";
 import { resolvePluginOptions, resolveBase, resolveOutDir } from "../pluginOptions";
+import { VitePluginSymfonyOptions } from "../types";
 
 describe("resolvePluginOptions", () => {
   it("resolves with default options when no config", ({ expect }) => {
     expect(resolvePluginOptions()).toMatchInlineSnapshot(`
       {
         "buildDirectory": "build",
+        "debug": false,
         "publicDirectory": "public",
         "refresh": false,
         "servePublic": true,
-        "verbose": false,
         "viteDevServerHostname": null,
       }
     `);
@@ -24,10 +25,10 @@ describe("resolvePluginOptions", () => {
     ).toMatchInlineSnapshot(`
       {
         "buildDirectory": "my-build/depth",
+        "debug": false,
         "publicDirectory": "www",
         "refresh": false,
         "servePublic": true,
-        "verbose": false,
         "viteDevServerHostname": null,
       }
     `);
@@ -39,13 +40,13 @@ describe("resolveBase", () => {
     expect(
       resolveBase({
         buildDirectory: "build",
-      }),
+      } as VitePluginSymfonyOptions),
     ).toBe("/build/");
 
     expect(
       resolveBase({
         buildDirectory: "custom/build",
-      }),
+      } as VitePluginSymfonyOptions),
     ).toBe("/custom/build/");
   });
 });
@@ -56,14 +57,14 @@ describe("resolveOutDir", () => {
       resolveOutDir({
         buildDirectory: "build",
         publicDirectory: "public",
-      }),
+      } as VitePluginSymfonyOptions),
     ).toBe("public/build");
 
     expect(
       resolveOutDir({
         buildDirectory: "custom/build",
         publicDirectory: "www",
-      }),
+      } as VitePluginSymfonyOptions),
     ).toBe("www/custom/build");
   });
 });

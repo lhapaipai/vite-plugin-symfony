@@ -25,10 +25,12 @@ import {
 } from "./utils";
 import { resolvePluginOptions, resolveBase, resolveOutDir, refreshPaths } from "./pluginOptions";
 
+import { VitePluginSymfonyOptions, StringMapping, GeneratedFiles } from "./types";
+
 // src and dist directory are in the same level;
 const pluginDir = dirname(dirname(fileURLToPath(import.meta.url)));
 
-export default function symfony(userOptions: PluginOptions = {}): Plugin {
+export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> = {}): Plugin {
   const pluginOptions = resolvePluginOptions(userOptions);
   let viteConfig: ResolvedConfig;
   let viteDevServerUrl: string;
@@ -106,7 +108,7 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
           });
         }
 
-        if (pluginOptions.verbose) {
+        if (pluginOptions.debug) {
           setTimeout(() => {
             devServer.config.logger.info(`\n${colors.green("➜")}  Vite Config \n`);
             devServer.config.logger.info(util.inspect(viteConfig, { showHidden: false, depth: null, colors: true }));
@@ -165,7 +167,7 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
         });
       }
     },
-    async renderChunk(code: string, chunk: RenderedChunk & { viteMetadata: ChunkMetadata }) {
+    async renderChunk(code: string, chunk: RenderedChunk) {
       if (!isCssEntryPoint(chunk)) {
         return;
       }
@@ -182,10 +184,7 @@ export default function symfony(userOptions: PluginOptions = {}): Plugin {
         inputRelPath2outputRelPath[cssAssetName] = cssBuildFilename;
       });
     },
-    generateBundle(
-      options: NormalizedOutputOptions,
-      bundle: { [fileName: string]: OutputAsset | (OutputChunk & { viteMetadata: ChunkMetadata }) },
-    ) {
+    generateBundle(options: NormalizedOutputOptions, bundle: { [fileName: string]: OutputAsset | OutputChunk }) {
       for (const chunk of Object.values(bundle)) {
         const inputRelPath = getInputRelPath(chunk, options, viteConfig);
         inputRelPath2outputRelPath[inputRelPath] = chunk.fileName;
