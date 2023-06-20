@@ -155,11 +155,6 @@ export const prepareRollupInputs = (config: ResolvedConfig): ParsedInputs => {
   for (const [entryName, inputRelPath] of Object.entries(config.build.rollupOptions.input)) {
     const entryAbsolutePath = normalizePath(resolve(config.root, inputRelPath));
 
-    if (entryAbsolutePath.indexOf(config.root) !== 0) {
-      console.error("Entry points must be inside Vite root directory");
-      process.exit(1);
-    }
-
     const extension = extname(inputRelPath);
 
     const inputType =

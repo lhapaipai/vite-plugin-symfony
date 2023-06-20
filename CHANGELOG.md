@@ -1,3 +1,7 @@
+## v3.3.2
+
+- fix #16 entrypoints outside vite root directory
+
 ## v3.3.1
 
 - fix circular reference with imports.
