@@ -32,7 +32,7 @@ function createBundleObject(files: (OutputChunk | OutputAsset)[]) {
 
 describe("vitePluginSymfony", () => {
   it("generate correct welcome build entrypoints", ({ expect }) => {
-    const welcomePluginInstance = vitePluginSymfony() as any;
+    const welcomePluginInstance = vitePluginSymfony({ debug: true }) as any;
 
     welcomePluginInstance.emitFile = vi.fn();
     welcomePluginInstance.configResolved({
@@ -55,7 +55,57 @@ describe("vitePluginSymfony", () => {
             welcome: {
               assets: [],
               css: [],
-              js: ["/build/assets/welcome-1e67239d.js"],
+              js: [
+                {
+                  path: "/build/assets/welcome-1e67239d.js",
+                  hash: null,
+                },
+              ],
+              legacy: false,
+              preload: [],
+            },
+          },
+          isProd: true,
+          legacy: false,
+          viteServer: false,
+        },
+        null,
+        2,
+      ),
+      type: "asset",
+    });
+  });
+
+  it("generate correct integrity hash for build entrypoints", ({ expect }) => {
+    const hashPluginInstance = vitePluginSymfony({ debug: true, sriAlgorithm: "sha256" }) as any;
+
+    hashPluginInstance.emitFile = vi.fn();
+    hashPluginInstance.configResolved({
+      ...viteBaseConfig,
+      build: {
+        rollupOptions: {
+          input: {
+            welcome: "./assets/page/welcome/index.js",
+          },
+        },
+      },
+    });
+    hashPluginInstance.generateBundle({ format: "es" }, createBundleObject([welcomeJs]));
+
+    expect(hashPluginInstance.emitFile).toHaveBeenCalledWith({
+      fileName: "entrypoints.json",
+      source: JSON.stringify(
+        {
+          entryPoints: {
+            welcome: {
+              assets: [],
+              css: [],
+              js: [
+                {
+                  path: "/build/assets/welcome-1e67239d.js",
+                  hash: "sha256-w+Sit18/MC+LC1iX8MrNapOiCQ8wbPX8Rb6ErbfDX1Q=",
+                },
+              ],
               legacy: false,
               preload: [],
             },
@@ -72,7 +122,7 @@ describe("vitePluginSymfony", () => {
   });
 
   it("generate correct pageAssets build entrypoints", ({ expect }) => {
-    const pageAssetsPluginInstance = vitePluginSymfony() as any;
+    const pageAssetsPluginInstance = vitePluginSymfony({ debug: true }) as any;
     pageAssetsPluginInstance.emitFile = vi.fn();
     pageAssetsPluginInstance.configResolved({
       ...viteBaseConfig,
@@ -92,9 +142,24 @@ describe("vitePluginSymfony", () => {
         {
           entryPoints: {
             pageAssets: {
-              assets: ["/build/assets/logo-d015cc3f.png"],
-              css: ["/build/assets/index-aa7c8190.css"],
-              js: ["/build/assets/pageAssets-05cfe79c.js"],
+              assets: [
+                {
+                  path: "/build/assets/logo-d015cc3f.png",
+                  hash: null,
+                },
+              ],
+              css: [
+                {
+                  path: "/build/assets/index-aa7c8190.css",
+                  hash: null,
+                },
+              ],
+              js: [
+                {
+                  path: "/build/assets/pageAssets-05cfe79c.js",
+                  hash: null,
+                },
+              ],
               legacy: false,
               preload: [],
             },
@@ -111,7 +176,7 @@ describe("vitePluginSymfony", () => {
   });
 
   it("generate correct pageImports build entrypoints", ({ expect }) => {
-    const pageImportsPluginInstance = vitePluginSymfony() as any;
+    const pageImportsPluginInstance = vitePluginSymfony({ debug: true }) as any;
     pageImportsPluginInstance.emitFile = vi.fn();
     pageImportsPluginInstance.configResolved({
       ...viteBaseConfig,
@@ -133,9 +198,19 @@ describe("vitePluginSymfony", () => {
             pageImports: {
               assets: [],
               css: [],
-              js: ["/build/assets/pageImports-53eb9fd1.js"],
+              js: [
+                {
+                  path: "/build/assets/pageImports-53eb9fd1.js",
+                  hash: null,
+                },
+              ],
               legacy: false,
-              preload: ["/build/assets/async-dep-e2ac9f96.js"],
+              preload: [
+                {
+                  path: "/build/assets/async-dep-e2ac9f96.js",
+                  hash: null,
+                },
+              ],
             },
           },
           isProd: true,
@@ -150,7 +225,7 @@ describe("vitePluginSymfony", () => {
   });
 
   it("generate correct theme build entrypoints", ({ expect }) => {
-    const themePluginInstance = vitePluginSymfony() as any;
+    const themePluginInstance = vitePluginSymfony({ debug: true }) as any;
     themePluginInstance.emitFile = vi.fn();
     themePluginInstance.configResolved({
       ...viteBaseConfig,
@@ -173,7 +248,12 @@ describe("vitePluginSymfony", () => {
           entryPoints: {
             theme: {
               assets: [],
-              css: ["/build/assets/theme-44b5be96.css"],
+              css: [
+                {
+                  path: "/build/assets/theme-44b5be96.css",
+                  hash: null,
+                },
+              ],
               js: [],
               legacy: false,
               preload: [],
@@ -191,7 +271,7 @@ describe("vitePluginSymfony", () => {
   });
 
   it("generate correct circular build entrypoints", ({ expect }) => {
-    const circularPluginInstance = vitePluginSymfony() as any;
+    const circularPluginInstance = vitePluginSymfony({ debug: true }) as any;
     circularPluginInstance.emitFile = vi.fn();
     circularPluginInstance.configResolved({
       ...viteBaseConfig,
@@ -214,9 +294,19 @@ describe("vitePluginSymfony", () => {
             circular: {
               assets: [],
               css: [],
-              js: ["/build/assets/circular1-56785678.js"],
+              js: [
+                {
+                  path: "/build/assets/circular1-56785678.js",
+                  hash: null,
+                },
+              ],
               legacy: false,
-              preload: ["/build/assets/circular2-12341234.js"],
+              preload: [
+                {
+                  path: "/build/assets/circular2-12341234.js",
+                  hash: null,
+                },
+              ],
             },
           },
           isProd: true,
@@ -231,7 +321,7 @@ describe("vitePluginSymfony", () => {
   });
 
   it("generate correct legacy build entrypoints", ({ expect }) => {
-    const legacyPluginInstance = vitePluginSymfony() as any;
+    const legacyPluginInstance = vitePluginSymfony({ debug: true }) as any;
     legacyPluginInstance.emitFile = vi.fn();
     legacyPluginInstance.configResolved({
       ...viteBaseConfig,
@@ -256,21 +346,36 @@ describe("vitePluginSymfony", () => {
             "welcome-legacy": {
               assets: [],
               css: [],
-              js: ["/build/assets/welcome-legacy-64979d13.js"],
+              js: [
+                {
+                  path: "/build/assets/welcome-legacy-64979d13.js",
+                  hash: null,
+                },
+              ],
               legacy: false,
               preload: [],
             },
             welcome: {
               assets: [],
               css: [],
-              js: ["/build/assets/welcome-1e67239d.js"],
+              js: [
+                {
+                  path: "/build/assets/welcome-1e67239d.js",
+                  hash: null,
+                },
+              ],
               legacy: "welcome-legacy",
               preload: [],
             },
             "polyfills-legacy": {
               assets: [],
               css: [],
-              js: ["/build/assets/polyfills-legacy-40963d34.js"],
+              js: [
+                {
+                  path: "/build/assets/polyfills-legacy-40963d34.js",
+                  hash: null,
+                },
+              ],
               legacy: false,
               preload: [],
             },

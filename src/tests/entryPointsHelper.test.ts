@@ -25,12 +25,18 @@ describe("getDevEntryPoints", () => {
       {
         "app": {
           "js": [
-            "http://localhost:5173/build/path/to/filename.ts",
+            {
+              "hash": null,
+              "path": "http://localhost:5173/build/path/to/filename.ts",
+            },
           ],
         },
         "theme": {
           "css": [
-            "http://localhost:5173/build/other/place/to/theme.scss",
+            {
+              "hash": null,
+              "path": "http://localhost:5173/build/other/place/to/theme.scss",
+            },
           ],
         },
       }

@@ -11,6 +11,7 @@ describe("resolvePluginOptions", () => {
         "publicDirectory": "public",
         "refresh": false,
         "servePublic": true,
+        "sriAlgorithm": false,
         "viteDevServerHostname": null,
       }
     `);
@@ -29,6 +30,7 @@ describe("resolvePluginOptions", () => {
         "publicDirectory": "www",
         "refresh": false,
         "servePublic": true,
+        "sriAlgorithm": false,
         "viteDevServerHostname": null,
       }
     `);

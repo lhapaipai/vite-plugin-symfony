@@ -1,16 +1,6 @@
 import type { ResolvedConfig } from "vite";
 import { getLegacyName, prepareRollupInputs } from "./utils";
-import {
-  EntryPoints,
-  EntryPoint,
-  StringMapping,
-  GeneratedFiles,
-  FileInfos,
-  FileWithHash,
-  VitePluginSymfonyOptions,
-  HashAlgorithm,
-} from "./types";
-import { resolve } from "node:path";
+import { EntryPoints, EntryPoint, StringMapping, GeneratedFiles, FileInfos, FileWithHash } from "./types";
 
 export const getDevEntryPoints = (config: ResolvedConfig, viteDevServerUrl: string): EntryPoints => {
   const entryPoints: EntryPoints = {};
@@ -135,7 +125,7 @@ export const resolveEntrypoint = (
       if (assets.findIndex((file) => file.path === dependency) === -1) {
         assets.push({
           path: `${config.base}${dependency}`,
-          hash: null,
+          hash: generatedFiles[dependency].hash,
         });
       }
     });
@@ -143,7 +133,7 @@ export const resolveEntrypoint = (
       if (js.findIndex((file) => file.path === dependency) === -1) {
         js.push({
           path: `${config.base}${dependency}`,
-          hash: null,
+          hash: generatedFiles[dependency].hash,
         });
       }
     });
@@ -151,7 +141,7 @@ export const resolveEntrypoint = (
       if (preload.findIndex((file) => file.path === dependency) === -1) {
         preload.push({
           path: `${config.base}${dependency}`,
-          hash: null,
+          hash: generatedFiles[dependency].hash,
         });
       }
     });
@@ -162,7 +152,7 @@ export const resolveEntrypoint = (
       if (css.findIndex((file) => file.path === dependency) === -1) {
         css.push({
           path: `${config.base}${dependency}`,
-          hash: null,
+          hash: generatedFiles[dependency].hash,
         });
       }
     });
