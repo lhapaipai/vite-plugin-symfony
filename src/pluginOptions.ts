@@ -22,6 +22,13 @@ export function resolvePluginOptions(userConfig: Partial<VitePluginSymfonyOption
     userConfig.servePublic = true;
   }
 
+  if (
+    typeof userConfig.sriAlgorithm === "string" &&
+    ["sha256", "sha384", "sha512"].indexOf(userConfig.sriAlgorithm.toString()) === -1
+  ) {
+    userConfig.sriAlgorithm = false;
+  }
+
   return {
     buildDirectory: userConfig.buildDirectory ?? "build",
     publicDirectory: userConfig.publicDirectory ?? "public",
@@ -29,6 +36,7 @@ export function resolvePluginOptions(userConfig: Partial<VitePluginSymfonyOption
     servePublic: userConfig.servePublic,
     debug: userConfig.debug === true ?? false,
     viteDevServerHostname: userConfig.viteDevServerHostname ?? null,
+    sriAlgorithm: userConfig.sriAlgorithm ?? false,
   };
 }
 

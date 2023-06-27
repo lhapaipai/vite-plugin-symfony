@@ -11,6 +11,11 @@ export interface ChunkMetadata {
   importedCss: Set<string>;
 }
 
+export type FileWithHash = {
+  path: string;
+  hash: string | null;
+};
+
 export type EntryPointsFile = {
   isProd: boolean;
   viteServer:
@@ -25,10 +30,10 @@ export type EntryPointsFile = {
 };
 
 export type EntryPoint = {
-  assets?: string[];
-  js?: string[];
-  css?: string[];
-  preload?: string[];
+  assets?: FileWithHash[];
+  js?: FileWithHash[];
+  css?: FileWithHash[];
+  preload?: FileWithHash[];
   legacy?: boolean | string;
 };
 export type EntryPoints = {
@@ -70,6 +75,7 @@ export type JsFileInfos = {
   type: "js";
   outputRelPath: string;
   inputRelPath: string | null;
+  hash: string | null;
 
   imports: string[];
 
@@ -83,6 +89,7 @@ export type CSSFileInfos = {
   type: "css";
   outputRelPath: string;
   inputRelPath: string | null;
+  hash: string | null;
 
   css: string[];
 };
@@ -90,6 +97,7 @@ export type AssetFileInfos = {
   type: "asset";
   outputRelPath: string;
   inputRelPath: string | null;
+  hash: string | null;
 };
 
 export type GeneratedFiles = {
@@ -97,6 +105,8 @@ export type GeneratedFiles = {
 };
 
 export type DevServerUrl = `${"http" | "https"}://${string}:${number}`;
+
+export type HashAlgorithm = false | "sha256" | "sha384" | "sha512";
 
 export type VitePluginSymfonyOptions = {
   /**
@@ -145,6 +155,12 @@ export type VitePluginSymfonyOptions = {
    * @default null
    */
   viteDevServerHostname: null | string;
+
+  /**
+   * Add an integrity attribute to your <script> <link> elements
+   * @default false
+   */
+  sriAlgorithm: HashAlgorithm;
 
   /**
    * Show vite resolved config

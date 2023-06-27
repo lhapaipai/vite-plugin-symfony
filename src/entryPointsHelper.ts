@@ -1,13 +1,28 @@
 import type { ResolvedConfig } from "vite";
 import { getLegacyName, prepareRollupInputs } from "./utils";
-import { EntryPoints, EntryPoint, StringMapping, GeneratedFiles, FileInfos } from "./types";
+import {
+  EntryPoints,
+  EntryPoint,
+  StringMapping,
+  GeneratedFiles,
+  FileInfos,
+  FileWithHash,
+  VitePluginSymfonyOptions,
+  HashAlgorithm,
+} from "./types";
+import { resolve } from "node:path";
 
 export const getDevEntryPoints = (config: ResolvedConfig, viteDevServerUrl: string): EntryPoints => {
   const entryPoints: EntryPoints = {};
 
   for (const [entryName, { inputRelPath, inputType }] of Object.entries(prepareRollupInputs(config))) {
     entryPoints[entryName] = {
-      [inputType]: [`${viteDevServerUrl}${config.base}${inputRelPath}`],
+      [inputType]: [
+        {
+          path: `${viteDevServerUrl}${config.base}${inputRelPath}`,
+          hash: null,
+        },
+      ],
     };
   }
   return entryPoints;
@@ -66,10 +81,10 @@ export const resolveEntrypoint = (
   legacyEntryName: boolean | string,
   resolvedImportOutputRelPaths: string[] = [],
 ): EntryPoint => {
-  const assets: string[] = [];
-  const css: string[] = [];
-  const js: string[] = [];
-  const preload: string[] = [];
+  const assets: FileWithHash[] = [];
+  const css: FileWithHash[] = [];
+  const js: FileWithHash[] = [];
+  const preload: FileWithHash[] = [];
 
   resolvedImportOutputRelPaths.push(fileInfos.outputRelPath);
 
@@ -92,51 +107,63 @@ export const resolveEntrypoint = (
         js: importJs,
       } = resolveEntrypoint(importFileInfos, generatedFiles, config, false, resolvedImportOutputRelPaths);
 
-      for (const dependency of importCss) {
-        if (css.indexOf(dependency) === -1) {
-          css.push(dependency);
+      for (const dependencyWithHash of importCss) {
+        if (css.findIndex((file) => file.path === dependencyWithHash.path) === -1) {
+          css.push(dependencyWithHash);
         }
       }
 
       // imports are preloaded not js files
-      for (const dependency of importJs) {
-        if (preload.indexOf(dependency) === -1) {
-          preload.push(dependency);
+      for (const dependencyWithHash of importJs) {
+        if (preload.findIndex((file) => file.path === dependencyWithHash.path) === -1) {
+          preload.push(dependencyWithHash);
         }
       }
-      for (const dependency of importPreload) {
-        if (preload.indexOf(dependency) === -1) {
-          preload.push(dependency);
+      for (const dependencyWithHash of importPreload) {
+        if (preload.findIndex((file) => file.path === dependencyWithHash.path) === -1) {
+          preload.push(dependencyWithHash);
         }
       }
-      for (const dependency of importAssets) {
-        if (assets.indexOf(dependency) === -1) {
-          assets.push(dependency);
+      for (const dependencyWithHash of importAssets) {
+        if (assets.findIndex((file) => file.path === dependencyWithHash.path) === -1) {
+          assets.push(dependencyWithHash);
         }
       }
     }
 
     fileInfos.assets.forEach((dependency) => {
-      if (assets.indexOf(dependency) === -1) {
-        assets.push(`${config.base}${dependency}`);
+      if (assets.findIndex((file) => file.path === dependency) === -1) {
+        assets.push({
+          path: `${config.base}${dependency}`,
+          hash: null,
+        });
       }
     });
     fileInfos.js.forEach((dependency) => {
-      if (js.indexOf(dependency) === -1) {
-        js.push(`${config.base}${dependency}`);
+      if (js.findIndex((file) => file.path === dependency) === -1) {
+        js.push({
+          path: `${config.base}${dependency}`,
+          hash: null,
+        });
       }
     });
     fileInfos.preload.forEach((dependency) => {
-      if (preload.indexOf(dependency) === -1) {
-        preload.push(`${config.base}${dependency}`);
+      if (preload.findIndex((file) => file.path === dependency) === -1) {
+        preload.push({
+          path: `${config.base}${dependency}`,
+          hash: null,
+        });
       }
     });
   }
 
   if (fileInfos.type === "js" || fileInfos.type === "css") {
     fileInfos.css.forEach((dependency) => {
-      if (css.indexOf(dependency) === -1) {
-        css.push(`${config.base}${dependency}`);
+      if (css.findIndex((file) => file.path === dependency) === -1) {
+        css.push({
+          path: `${config.base}${dependency}`,
+          hash: null,
+        });
       }
     });
   }

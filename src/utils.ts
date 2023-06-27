@@ -6,7 +6,8 @@ import { writeFileSync, rmSync, readdirSync } from "fs";
 import { join } from "path";
 import type { RenderedChunk, OutputChunk, OutputAsset, NormalizedOutputOptions } from "rollup";
 import { resolve, extname, relative } from "path";
-import { StringMapping, DevServerUrl, VitePluginSymfonyOptions, FileInfos, ParsedInputs } from "./types";
+import { StringMapping, DevServerUrl, VitePluginSymfonyOptions, FileInfos, ParsedInputs, HashAlgorithm } from "./types";
+import { BinaryLike, createHash } from "node:crypto";
 
 export const isWindows = os.platform() === "win32";
 
@@ -74,7 +75,7 @@ const polyfillId = "\0vite/legacy-polyfills";
 export function resolveDevServerUrl(
   address: AddressInfo,
   config: ResolvedConfig,
-  pluginOptions: Required<VitePluginSymfonyOptions>,
+  pluginOptions: VitePluginSymfonyOptions,
 ): DevServerUrl {
   if (config.server?.origin) {
     return config.server.origin as DevServerUrl;
@@ -117,17 +118,24 @@ export const isCssEntryPoint = (chunk: RenderedChunk) => {
   return false;
 };
 
-export const getFileInfos = (chunk: OutputChunk | OutputAsset, inputRelPath): FileInfos => {
+export const getFileInfos = (
+  chunk: OutputChunk | OutputAsset,
+  inputRelPath,
+  pluginOptions: VitePluginSymfonyOptions,
+): FileInfos => {
+  const alg = pluginOptions.sriAlgorithm;
   if (chunk.type === "asset") {
     if (chunk.fileName.endsWith(".css")) {
       return {
         css: [chunk.fileName],
+        hash: alg === false ? null : generateHash(chunk.source, alg),
         inputRelPath,
         outputRelPath: chunk.fileName,
         type: "css",
       };
     } else {
       return {
+        hash: alg === false ? null : generateHash(chunk.source, alg),
         inputRelPath,
         outputRelPath: chunk.fileName,
         type: "asset",
@@ -139,6 +147,7 @@ export const getFileInfos = (chunk: OutputChunk | OutputAsset, inputRelPath): Fi
     return {
       assets: Array.from(viteMetadata.importedAssets),
       css: Array.from(viteMetadata.importedCss),
+      hash: alg === false ? null : generateHash(chunk.code, alg),
       imports: imports,
       inputRelPath,
       js: [fileName],
@@ -148,6 +157,14 @@ export const getFileInfos = (chunk: OutputChunk | OutputAsset, inputRelPath): Fi
     };
   }
 };
+
+function generateHash(source: BinaryLike, alg: HashAlgorithm) {
+  if (alg === false) {
+    return null;
+  }
+  const hash = createHash(alg).update(source).digest().toString("base64");
+  return `${alg}-${hash}`;
+}
 
 export const prepareRollupInputs = (config: ResolvedConfig): ParsedInputs => {
   const inputParsed: ParsedInputs = {};

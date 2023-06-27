@@ -188,7 +188,7 @@ export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> =
       for (const chunk of Object.values(bundle)) {
         const inputRelPath = getInputRelPath(chunk, options, viteConfig);
         inputRelPath2outputRelPath[inputRelPath] = chunk.fileName;
-        generatedFiles[chunk.fileName] = getFileInfos(chunk, inputRelPath);
+        generatedFiles[chunk.fileName] = getFileInfos(chunk, inputRelPath, pluginOptions);
       }
 
       outputCount++;
@@ -211,7 +211,7 @@ export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> =
               viteServer: false,
             },
             null,
-            2,
+            pluginOptions.debug ? 2 : null,
           ),
           type: "asset",
         });
