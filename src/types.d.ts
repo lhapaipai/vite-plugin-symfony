@@ -113,6 +113,7 @@ export type VitePluginSymfonyOptions = {
    * Web directory root
    * Relative file path from project directory root.
    * @default 'public'
+   * @deprecated use `build.outDir`: join(publicDirectory, buildDirectory) from vite config
    */
   publicDirectory: string;
 
@@ -120,6 +121,7 @@ export type VitePluginSymfonyOptions = {
    * Build directory (or path)
    * Relative path from web directory root
    * @default 'build'
+   * @deprecated use `base`: "/" + buildDirectory + "/" from vite config
    */
   buildDirectory: string;
 
@@ -133,9 +135,9 @@ export type VitePluginSymfonyOptions = {
    *
    * If you want to force vite option publicDir to true, set servePublic to false.
    *
-   * @default true
+   * @default 'public'
    */
-  servePublic: boolean;
+  servePublic: false | string;
 
   /**
    * Refresh vite dev server when your twig templates are updated.

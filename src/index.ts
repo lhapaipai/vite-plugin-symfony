@@ -23,7 +23,7 @@ import {
   getFileInfos,
   getInputRelPath,
 } from "./utils";
-import { resolvePluginOptions, resolveBase, resolveOutDir, refreshPaths } from "./pluginOptions";
+import { resolvePluginOptions, resolveBase, resolveOutDir, refreshPaths, resolvePublicDir } from "./pluginOptions";
 
 import { VitePluginSymfonyOptions, StringMapping, GeneratedFiles } from "./types";
 
@@ -77,6 +77,25 @@ export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> =
       // empty the buildDir and create an entrypoints.json file inside.
       devServer.httpServer?.once("listening", () => {
         if (viteConfig.env.DEV) {
+          if (typeof pluginOptions.buildDirectory !== "undefined") {
+            devServer.config.logger.error(
+              `${colors.red(
+                "[vite-plugin-symfony]",
+              )} "buildDirectory" plugin option is deprecated use base: "${resolveBase(
+                pluginOptions,
+              )}" from vite config instead`,
+            );
+          }
+          if (typeof pluginOptions.publicDirectory !== "undefined") {
+            devServer.config.logger.error(
+              `${colors.red(
+                "[vite-plugin-symfony]",
+              )} "publicDirectory" plugin option is deprecated use build.outDir: "${resolveOutDir(
+                pluginOptions,
+              )}" from vite config instead`,
+            );
+          }
+
           const buildDir = resolve(viteConfig.root, viteConfig.build.outDir);
 
           if (!existsSync(buildDir)) {
@@ -132,10 +151,10 @@ export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> =
         });
       }
 
-      if (pluginOptions.servePublic) {
+      if (pluginOptions.servePublic !== false) {
         // inspired by https://github.com/vitejs/vite
         // file: packages/vite/src/node/server/middlewares/static.ts
-        const serve = sirv(pluginOptions.publicDirectory, {
+        const serve = sirv(resolvePublicDir(pluginOptions), {
           dev: true,
           etag: true,
           extensions: [],

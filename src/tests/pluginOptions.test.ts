@@ -6,11 +6,11 @@ describe("resolvePluginOptions", () => {
   it("resolves with default options when no config", ({ expect }) => {
     expect(resolvePluginOptions()).toMatchInlineSnapshot(`
       {
-        "buildDirectory": "build",
+        "buildDirectory": undefined,
         "debug": false,
-        "publicDirectory": "public",
+        "publicDirectory": undefined,
         "refresh": false,
-        "servePublic": true,
+        "servePublic": "public",
         "sriAlgorithm": false,
         "viteDevServerHostname": null,
       }
@@ -29,7 +29,7 @@ describe("resolvePluginOptions", () => {
         "debug": false,
         "publicDirectory": "www",
         "refresh": false,
-        "servePublic": true,
+        "servePublic": "public",
         "sriAlgorithm": false,
         "viteDevServerHostname": null,
       }

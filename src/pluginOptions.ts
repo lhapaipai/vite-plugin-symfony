@@ -18,8 +18,8 @@ export function resolvePluginOptions(userConfig: Partial<VitePluginSymfonyOption
     }
   }
 
-  if (userConfig.servePublic !== false) {
-    userConfig.servePublic = true;
+  if (typeof userConfig.servePublic === "undefined") {
+    userConfig.servePublic = "public";
   }
 
   if (
@@ -30,8 +30,8 @@ export function resolvePluginOptions(userConfig: Partial<VitePluginSymfonyOption
   }
 
   return {
-    buildDirectory: userConfig.buildDirectory ?? "build",
-    publicDirectory: userConfig.publicDirectory ?? "public",
+    buildDirectory: userConfig.buildDirectory,
+    publicDirectory: userConfig.publicDirectory,
     refresh: userConfig.refresh ?? false,
     servePublic: userConfig.servePublic,
     debug: userConfig.debug === true ?? false,
@@ -41,11 +41,30 @@ export function resolvePluginOptions(userConfig: Partial<VitePluginSymfonyOption
 }
 
 export function resolveBase(config: VitePluginSymfonyOptions): string {
-  return "/" + config.buildDirectory + "/";
+  if (typeof config.buildDirectory !== "undefined") {
+    return "/" + config.buildDirectory + "/";
+  }
+  return "/build/";
 }
 
 export function resolveOutDir(config: VitePluginSymfonyOptions): string {
-  return join(config.publicDirectory, config.buildDirectory);
+  let publicDirectory = "public";
+  let buildDirectory = "build";
+  if (typeof config.publicDirectory !== "undefined") {
+    publicDirectory = config.publicDirectory;
+  }
+  if (typeof config.buildDirectory !== "undefined") {
+    buildDirectory = config.buildDirectory;
+  }
+  return join(publicDirectory, buildDirectory);
+}
+
+export function resolvePublicDir(config: VitePluginSymfonyOptions) {
+  if (typeof config.publicDirectory !== "undefined") {
+    return config.publicDirectory;
+  }
+
+  return config.servePublic === false ? null : config.servePublic;
 }
 
 export const refreshPaths = ["templates/**/*.twig"];
