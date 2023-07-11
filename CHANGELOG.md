@@ -1,3 +1,7 @@
+## v4.0.0
+
+- add `sriAlgorithm`
+
 ## v3.3.2
 
 - fix #16 entrypoints outside vite root directory
