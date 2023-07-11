@@ -75,6 +75,7 @@ export const resolveEntrypoint = (
   const css: FileWithHash[] = [];
   const js: FileWithHash[] = [];
   const preload: FileWithHash[] = [];
+  const dynamic: FileWithHash[] = [];
 
   resolvedImportOutputRelPaths.push(fileInfos.outputRelPath);
 
@@ -93,8 +94,9 @@ export const resolveEntrypoint = (
       const {
         assets: importAssets,
         css: importCss,
-        preload: importPreload,
+        dynamic: importDynamic,
         js: importJs,
+        preload: importPreload,
       } = resolveEntrypoint(importFileInfos, generatedFiles, config, false, resolvedImportOutputRelPaths);
 
       for (const dependencyWithHash of importCss) {
@@ -112,6 +114,11 @@ export const resolveEntrypoint = (
       for (const dependencyWithHash of importPreload) {
         if (preload.findIndex((file) => file.path === dependencyWithHash.path) === -1) {
           preload.push(dependencyWithHash);
+        }
+      }
+      for (const dependencyWithHash of importDynamic) {
+        if (dynamic.findIndex((file) => file.path === dependencyWithHash.path) === -1) {
+          dynamic.push(dependencyWithHash);
         }
       }
       for (const dependencyWithHash of importAssets) {
@@ -145,6 +152,14 @@ export const resolveEntrypoint = (
         });
       }
     });
+    fileInfos.dynamic.forEach((dependency) => {
+      if (dynamic.findIndex((file) => file.path === dependency) === -1) {
+        dynamic.push({
+          path: `${config.base}${dependency}`,
+          hash: generatedFiles[dependency].hash,
+        });
+      }
+    });
   }
 
   if (fileInfos.type === "js" || fileInfos.type === "css") {
@@ -158,5 +173,5 @@ export const resolveEntrypoint = (
     });
   }
 
-  return { assets, css, js, legacy: legacyEntryName, preload };
+  return { assets, css, dynamic, js, legacy: legacyEntryName, preload };
 };

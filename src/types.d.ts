@@ -34,6 +34,7 @@ export type EntryPoint = {
   js?: FileWithHash[];
   css?: FileWithHash[];
   preload?: FileWithHash[];
+  dynamic?: FileWithHash[];
   legacy?: boolean | string;
 };
 export type EntryPoints = {
@@ -82,6 +83,7 @@ export type JsFileInfos = {
   assets: string[];
   js: string[];
   preload: string[];
+  dynamic: string[];
 
   css: string[];
 };

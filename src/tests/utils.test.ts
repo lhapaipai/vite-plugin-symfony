@@ -38,6 +38,7 @@ describe("getFileInfos", () => {
         {
           "assets": [],
           "css": [],
+          "dynamic": [],
           "hash": null,
           "imports": [],
           "inputRelPath": "assets/lib/async-dep.js",
@@ -87,6 +88,7 @@ describe("getFileInfos", () => {
         {
           "assets": [],
           "css": [],
+          "dynamic": [],
           "hash": null,
           "imports": [],
           "inputRelPath": "assets/page/welcome/index.js",
@@ -104,6 +106,7 @@ describe("getFileInfos", () => {
       {
         "assets": [],
         "css": [],
+        "dynamic": [],
         "hash": "sha256-w+Sit18/MC+LC1iX8MrNapOiCQ8wbPX8Rb6ErbfDX1Q=",
         "imports": [],
         "inputRelPath": "assets/page/welcome/index.js",
@@ -124,6 +127,7 @@ describe("getFileInfos", () => {
           "css": [
             "assets/index-aa7c8190.css",
           ],
+          "dynamic": [],
           "hash": null,
           "imports": [],
           "inputRelPath": "assets/page/assets/index.js",
@@ -143,6 +147,7 @@ describe("getFileInfos", () => {
       {
         "assets": [],
         "css": [],
+        "dynamic": [],
         "hash": null,
         "imports": [],
         "inputRelPath": "assets/page/welcome/index-legacy.js",
@@ -159,6 +164,7 @@ describe("getFileInfos", () => {
         {
           "assets": [],
           "css": [],
+          "dynamic": [],
           "hash": null,
           "imports": [],
           "inputRelPath": "vite/legacy-polyfills",

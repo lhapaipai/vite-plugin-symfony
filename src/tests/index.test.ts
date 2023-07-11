@@ -55,6 +55,7 @@ describe("vitePluginSymfony", () => {
             welcome: {
               assets: [],
               css: [],
+              dynamic: [],
               js: [
                 {
                   path: "/build/assets/welcome-1e67239d.js",
@@ -100,6 +101,7 @@ describe("vitePluginSymfony", () => {
             welcome: {
               assets: [],
               css: [],
+              dynamic: [],
               js: [
                 {
                   path: "/build/assets/welcome-1e67239d.js",
@@ -154,6 +156,7 @@ describe("vitePluginSymfony", () => {
                   hash: null,
                 },
               ],
+              dynamic: [],
               js: [
                 {
                   path: "/build/assets/pageAssets-05cfe79c.js",
@@ -198,6 +201,12 @@ describe("vitePluginSymfony", () => {
             pageImports: {
               assets: [],
               css: [],
+              dynamic: [
+                {
+                  path: "/build/assets/async-dep-e2ac9f96.js",
+                  hash: null,
+                },
+              ],
               js: [
                 {
                   path: "/build/assets/pageImports-53eb9fd1.js",
@@ -205,12 +214,7 @@ describe("vitePluginSymfony", () => {
                 },
               ],
               legacy: false,
-              preload: [
-                {
-                  path: "/build/assets/async-dep-e2ac9f96.js",
-                  hash: null,
-                },
-              ],
+              preload: [],
             },
           },
           isProd: true,
@@ -254,6 +258,7 @@ describe("vitePluginSymfony", () => {
                   hash: null,
                 },
               ],
+              dynamic: [],
               js: [],
               legacy: false,
               preload: [],
@@ -294,6 +299,7 @@ describe("vitePluginSymfony", () => {
             circular: {
               assets: [],
               css: [],
+              dynamic: [],
               js: [
                 {
                   path: "/build/assets/circular1-56785678.js",
@@ -346,6 +352,7 @@ describe("vitePluginSymfony", () => {
             "welcome-legacy": {
               assets: [],
               css: [],
+              dynamic: [],
               js: [
                 {
                   path: "/build/assets/welcome-legacy-64979d13.js",
@@ -358,6 +365,7 @@ describe("vitePluginSymfony", () => {
             welcome: {
               assets: [],
               css: [],
+              dynamic: [],
               js: [
                 {
                   path: "/build/assets/welcome-1e67239d.js",
@@ -370,6 +378,7 @@ describe("vitePluginSymfony", () => {
             "polyfills-legacy": {
               assets: [],
               css: [],
+              dynamic: [],
               js: [
                 {
                   path: "/build/assets/polyfills-legacy-40963d34.js",

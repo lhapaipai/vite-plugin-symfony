@@ -152,7 +152,8 @@ export const getFileInfos = (
       inputRelPath,
       js: [fileName],
       outputRelPath: fileName,
-      preload: dynamicImports,
+      preload: [],
+      dynamic: dynamicImports,
       type: "js",
     };
   }
