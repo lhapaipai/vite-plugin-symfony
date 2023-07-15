@@ -171,4 +171,11 @@ export type VitePluginSymfonyOptions = {
    * @default false
    */
   debug: boolean;
+
+  /**
+   * Override the origin for every dev entrypoint.
+   * Useful when you use a proxy server.
+   * @default null
+   */
+  originOverride: null | string;
 };
