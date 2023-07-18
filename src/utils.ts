@@ -178,7 +178,7 @@ export const prepareRollupInputs = (config: ResolvedConfig): ParsedInputs => {
     const inputType =
       [".css", ".scss", ".sass", ".less", ".styl", ".stylus", ".postcss"].indexOf(extension) !== -1 ? "css" : "js";
 
-    const entryRelativePath = relative(config.root, entryAbsolutePath);
+    const entryRelativePath = normalizePath(relative(config.root, entryAbsolutePath));
 
     inputParsed[entryName] = {
       inputType,

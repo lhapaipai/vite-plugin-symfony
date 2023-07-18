@@ -1,3 +1,7 @@
+## v4.0.3
+
+- fix #24 normalized path
+
 ## v4.0.0
 
 - add `sriAlgorithm`
