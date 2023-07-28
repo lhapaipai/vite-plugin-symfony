@@ -52,7 +52,7 @@
   "bugs": {
     "url": "https://github.com/lhapaipai/vite-plugin-symfony/issues"
   },
-  "homepage": "https://github.com/lhapaipai/vite-plugin-symfony#readme",
+  "homepage": "https://symfony-vite.pentatrion.com",
   "peerDependencies": {
     "vite": "^3.0.0 || ^4.0.0"
   },

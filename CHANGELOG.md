@@ -1,4 +1,4 @@
-## v4.0.3
+## v4.0.2
 
 - fix #24 normalized path
 
