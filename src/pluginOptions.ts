@@ -30,6 +30,7 @@ export function resolvePluginOptions(userConfig: Partial<VitePluginSymfonyOption
   }
 
   return {
+    originOverride: userConfig.originOverride ?? null,
     buildDirectory: userConfig.buildDirectory,
     publicDirectory: userConfig.publicDirectory,
     refresh: userConfig.refresh ?? false,

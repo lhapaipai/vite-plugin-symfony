@@ -77,6 +77,10 @@ export function resolveDevServerUrl(
   config: ResolvedConfig,
   pluginOptions: VitePluginSymfonyOptions,
 ): DevServerUrl {
+  if (pluginOptions.originOverride) {
+    return pluginOptions.originOverride as DevServerUrl;
+  }
+
   if (config.server?.origin) {
     return config.server.origin as DevServerUrl;
   }
