@@ -1,3 +1,8 @@
+## v4.1.0
+
+- add `originOverride` (@elliason)
+- deprecate `viteDevServerHostname`
+
 ## v4.0.2
 
 - fix #24 normalized path

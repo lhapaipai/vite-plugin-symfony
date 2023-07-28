@@ -81,7 +81,7 @@ export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> =
             devServer.config.logger.error(
               `${colors.red(
                 "[vite-plugin-symfony]",
-              )} "buildDirectory" plugin option is deprecated use base: "${resolveBase(
+              )} "buildDirectory" plugin option is deprecated and will be removed in v5.x use base: "${resolveBase(
                 pluginOptions,
               )}" from vite config instead`,
             );
@@ -90,9 +90,16 @@ export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> =
             devServer.config.logger.error(
               `${colors.red(
                 "[vite-plugin-symfony]",
-              )} "publicDirectory" plugin option is deprecated use build.outDir: "${resolveOutDir(
+              )} "publicDirectory" plugin option is deprecated and will be removed in v5.x use build.outDir: "${resolveOutDir(
                 pluginOptions,
               )}" from vite config instead`,
+            );
+          }
+          if (pluginOptions.viteDevServerHostname !== null) {
+            devServer.config.logger.error(
+              `${colors.red(
+                "[vite-plugin-symfony]",
+              )} "viteDevServerHostname" plugin option is deprecated and will be removed in v5.x use originOverride with protocol and port instead`,
             );
           }
 

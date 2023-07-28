@@ -8,6 +8,7 @@ describe("resolvePluginOptions", () => {
       {
         "buildDirectory": undefined,
         "debug": false,
+        "originOverride": null,
         "publicDirectory": undefined,
         "refresh": false,
         "servePublic": "public",
@@ -27,6 +28,7 @@ describe("resolvePluginOptions", () => {
       {
         "buildDirectory": "my-build/depth",
         "debug": false,
+        "originOverride": null,
         "publicDirectory": "www",
         "refresh": false,
         "servePublic": "public",

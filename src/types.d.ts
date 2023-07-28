@@ -157,6 +157,7 @@ export type VitePluginSymfonyOptions = {
    * Related to this issue : https://github.com/lhapaipai/vite-bundle/issues/26
    *
    * @default null
+   * @deprecated use `originOverride` with protocol and port instead
    */
   viteDevServerHostname: null | string;
 
