@@ -1,10 +1,15 @@
 import "rollup";
+import { Plugin, ResolvedConfig } from "vite";
 
 declare module "rollup" {
   export interface RenderedChunk {
     viteMetadata?: ChunkMetadata;
   }
 }
+
+export type ResolvedConfigWithOrderablePlugins = Omit<ResolvedConfig, "plugins"> & {
+  plugins: Plugin[];
+};
 
 export interface ChunkMetadata {
   importedAssets: Set<string>;
@@ -179,4 +184,11 @@ export type VitePluginSymfonyOptions = {
    * @default null
    */
   originOverride: null | string;
+
+  /**
+   * force the plugin to run at the end of the list of all plugins
+   * necessary if you want to add integrity attributes in your scripts
+   * @default true
+   */
+  enforcePluginOrderingPosition: boolean;
 };

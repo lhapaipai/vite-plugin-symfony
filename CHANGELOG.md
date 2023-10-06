@@ -1,3 +1,8 @@
+## v4.2.0
+
+- add enforcePluginOrderingPosition option
+- fix Integrity hash issue
+
 ## v4.1.0
 
 - add `originOverride` (@elliason)

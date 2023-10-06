@@ -25,14 +25,14 @@ import {
 } from "./utils";
 import { resolvePluginOptions, resolveBase, resolveOutDir, refreshPaths, resolvePublicDir } from "./pluginOptions";
 
-import { VitePluginSymfonyOptions, StringMapping, GeneratedFiles } from "./types";
+import { VitePluginSymfonyOptions, StringMapping, GeneratedFiles, ResolvedConfigWithOrderablePlugins } from "./types";
 
 // src and dist directory are in the same level;
 const pluginDir = dirname(dirname(fileURLToPath(import.meta.url)));
 
 export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> = {}): Plugin {
   const pluginOptions = resolvePluginOptions(userOptions);
-  let viteConfig: ResolvedConfig;
+  let viteConfig: ResolvedConfigWithOrderablePlugins;
   let viteDevServerUrl: string;
 
   const entryPointsBasename = "entrypoints.json";
@@ -67,7 +67,15 @@ export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> =
       return extraConfig;
     },
     configResolved(config) {
-      viteConfig = config;
+      viteConfig = config as ResolvedConfigWithOrderablePlugins;
+
+      if (pluginOptions.enforcePluginOrderingPosition) {
+        const pluginPos = viteConfig.plugins.findIndex((plugin) => plugin.name === "symfony");
+        const symfonyPlugin = viteConfig.plugins.splice(pluginPos, 1);
+
+        const manifestPos = viteConfig.plugins.findIndex((plugin) => plugin.name === "vite:reporter");
+        viteConfig.plugins.splice(manifestPos, 0, symfonyPlugin[0]);
+      }
     },
     configureServer(devServer) {
       // vite server is running
