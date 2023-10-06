@@ -8,6 +8,7 @@ describe("resolvePluginOptions", () => {
       {
         "buildDirectory": undefined,
         "debug": false,
+        "enforcePluginOrderingPosition": true,
         "originOverride": null,
         "publicDirectory": undefined,
         "refresh": false,
@@ -28,6 +29,7 @@ describe("resolvePluginOptions", () => {
       {
         "buildDirectory": "my-build/depth",
         "debug": false,
+        "enforcePluginOrderingPosition": true,
         "originOverride": null,
         "publicDirectory": "www",
         "refresh": false,
