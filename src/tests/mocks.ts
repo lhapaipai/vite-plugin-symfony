@@ -5,6 +5,7 @@ import { ChunkMetadata } from "../types";
 export const viteBaseConfig = {
   root: "/home/me/project-dir",
   base: "/build/",
+  plugins: [{ name: "symfony" }, { name: "vite:reporter" }],
 } as unknown as ResolvedConfig;
 
 export const pageImports = {
