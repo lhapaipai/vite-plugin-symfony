@@ -62,6 +62,11 @@ export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> =
           //Set to true to force dependency pre-bundling.
           force: true,
         },
+        server: {
+          watch: {
+            ignored: userConfig.server?.watch?.ignored ? [] : ["**/vendor/**"],
+          },
+        },
       };
 
       return extraConfig;
