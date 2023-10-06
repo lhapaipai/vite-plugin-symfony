@@ -2,8 +2,10 @@ import { resolve, join, relative, dirname } from "node:path";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import util from "node:util";
 import { fileURLToPath } from "node:url";
+import glob from "fast-glob";
+import { cwd } from "node:process";
 
-import { Plugin, UserConfig, ResolvedConfig } from "vite";
+import { Plugin, UserConfig } from "vite";
 import sirv from "sirv";
 
 import colors from "picocolors";
@@ -46,6 +48,8 @@ export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> =
     name: "symfony",
     enforce: "post",
     config(userConfig) {
+      const root = resolve(userConfig.root) ?? cwd();
+
       if (userConfig.build.rollupOptions.input instanceof Array) {
         console.error("rollupOptions.input must be an Objet like {app: './assets/app.js'}");
         process.exit(1);
@@ -64,7 +68,9 @@ export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> =
         },
         server: {
           watch: {
-            ignored: userConfig.server?.watch?.ignored ? [] : ["**/vendor/**"],
+            ignored: userConfig.server?.watch?.ignored
+              ? []
+              : ["**/vendor/**", glob.escapePath(root + "/var") + "/**", glob.escapePath(root + "/public") + "/**"],
           },
         },
       };

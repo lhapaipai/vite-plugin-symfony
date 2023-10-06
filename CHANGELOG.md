@@ -1,3 +1,7 @@
+## v4.3.1
+
+- add vendor, var and public to ignored directory for file watcher.
+
 ## v4.2.0
 
 - add enforcePluginOrderingPosition option
