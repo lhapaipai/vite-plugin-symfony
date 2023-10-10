@@ -48,7 +48,7 @@ export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> =
     name: "symfony",
     enforce: "post",
     config(userConfig) {
-      const root = resolve(userConfig.root) ?? cwd();
+      const root = userConfig.root ? resolve(userConfig.root) : cwd();
 
       if (userConfig.build.rollupOptions.input instanceof Array) {
         console.error("rollupOptions.input must be an Objet like {app: './assets/app.js'}");
