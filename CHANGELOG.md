@@ -1,3 +1,7 @@
+## v4.3.2
+
+- fix #26 TypeError when no root option (@andyexeter) 
+
 ## v4.3.1
 
 - add vendor, var and public to ignored directory for file watcher.
