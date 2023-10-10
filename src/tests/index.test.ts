@@ -17,6 +17,7 @@ import {
   logoPng,
   circular1Js,
   circular2Js,
+  viteUserConfigNoRoot,
 } from "./mocks";
 
 function createBundleObject(files: (OutputChunk | OutputAsset)[]) {
@@ -397,6 +398,28 @@ describe("vitePluginSymfony", () => {
         2,
       ),
       type: "asset",
+    });
+  });
+
+  it("loads correctly without root user config option", ({ expect }) => {
+    const pluginInstance = vitePluginSymfony({ debug: true }) as any;
+    const config = pluginInstance.config(viteUserConfigNoRoot);
+
+    expect(config).toEqual({
+      base: "/build/",
+      publicDir: false,
+      build: {
+        manifest: true,
+        outDir: "public/build",
+      },
+      optimizeDeps: {
+        force: true,
+      },
+      server: {
+        watch: {
+          ignored: ["**/vendor/**", process.cwd() + "/var/**", process.cwd() + "/public/**"],
+        },
+      },
     });
   });
 });

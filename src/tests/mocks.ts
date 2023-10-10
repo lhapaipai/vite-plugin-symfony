@@ -1,5 +1,5 @@
 import type { OutputChunk, OutputAsset } from "rollup";
-import type { ResolvedConfig } from "vite";
+import type { ResolvedConfig, UserConfig } from "vite";
 import { ChunkMetadata } from "../types";
 
 export const viteBaseConfig = {
@@ -7,6 +7,14 @@ export const viteBaseConfig = {
   base: "/build/",
   plugins: [{ name: "symfony" }, { name: "vite:reporter" }],
 } as unknown as ResolvedConfig;
+
+export const viteUserConfigNoRoot = {
+  base: "/build/",
+  plugins: [{ name: "symfony" }, { name: "vite:reporter" }],
+  build: {
+    rollupOptions: {},
+  },
+} as unknown as UserConfig;
 
 export const pageImports = {
   dynamicImports: ["assets/async-dep-e2ac9f96.js"],
