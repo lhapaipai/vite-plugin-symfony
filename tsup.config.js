@@ -5,7 +5,7 @@ export default defineConfig({
   dts: true,
   format: ["esm", "cjs"],
   esbuildOptions(options) {
-    options.external = ["picocolors"];
+    options.external = ["picocolors", "fast-glob"];
   },
   shims: true,
 });
