@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-symfony",
-  "version": "4.3.4",
+  "version": "5.0.0",
   "description": "",
   "main": "dist/index.js",
   "exports": {
