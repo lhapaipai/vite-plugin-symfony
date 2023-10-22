@@ -22,7 +22,7 @@ export type FileWithHash = {
 };
 
 export type EntryPointsFile = {
-  isProd: boolean;
+  isBuild: boolean;
   viteServer:
     | {
         origin: string;

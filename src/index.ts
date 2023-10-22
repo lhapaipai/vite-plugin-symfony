@@ -143,7 +143,7 @@ export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> =
 
           const entryPointsPath = resolve(viteConfig.root, viteConfig.build.outDir, entryPointsBasename);
           writeJson(entryPointsPath, {
-            isProd: false,
+            isBuild: false,
             viteServer: {
               origin: viteDevServerUrl,
               base: viteConfig.base,
@@ -251,7 +251,7 @@ export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> =
           source: JSON.stringify(
             {
               entryPoints,
-              isProd: true,
+              isBuild: true,
               legacy: typeof entryPoints["polyfills-legacy"] !== "undefined",
               viteServer: false,
             },
