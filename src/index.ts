@@ -12,7 +12,7 @@ import colors from "picocolors";
 
 import type { RenderedChunk, OutputAsset, NormalizedOutputOptions, OutputChunk } from "rollup";
 
-import { getDevEntryPoints, getBuildEntryPoints } from "./entryPointsHelper";
+import { getDevEntryPoints, getBuildEntryPoints, getFilesMetadatas } from "./entryPointsHelper";
 import {
   normalizePath,
   writeJson,
@@ -143,13 +143,11 @@ export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> =
 
           const entryPointsPath = resolve(viteConfig.root, viteConfig.build.outDir, entryPointsBasename);
           writeJson(entryPointsPath, {
-            isBuild: false,
-            viteServer: {
-              origin: viteDevServerUrl,
-              base: viteConfig.base,
-            },
+            base: viteConfig.base,
             entryPoints,
             legacy: false,
+            metadatas: {},
+            viteServer: viteDevServerUrl,
           });
         }
 
@@ -250,10 +248,11 @@ export default function symfony(userOptions: Partial<VitePluginSymfonyOptions> =
           fileName: entryPointsBasename,
           source: JSON.stringify(
             {
+              base: viteConfig.base,
               entryPoints,
-              isBuild: true,
               legacy: typeof entryPoints["polyfills-legacy"] !== "undefined",
-              viteServer: false,
+              metadatas: getFilesMetadatas(viteConfig.base, generatedFiles),
+              viteServer: null,
             },
             null,
             pluginOptions.debug ? 2 : null,

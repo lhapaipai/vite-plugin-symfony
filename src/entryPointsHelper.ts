@@ -1,21 +1,29 @@
 import type { ResolvedConfig } from "vite";
 import { getLegacyName, prepareRollupInputs } from "./utils";
-import { EntryPoints, EntryPoint, StringMapping, GeneratedFiles, FileInfos, FileWithHash } from "./types";
+import { EntryPoints, EntryPoint, StringMapping, GeneratedFiles, FileInfos, FilesMetadatas } from "./types";
 
 export const getDevEntryPoints = (config: ResolvedConfig, viteDevServerUrl: string): EntryPoints => {
   const entryPoints: EntryPoints = {};
 
   for (const [entryName, { inputRelPath, inputType }] of Object.entries(prepareRollupInputs(config))) {
     entryPoints[entryName] = {
-      [inputType]: [
-        {
-          path: `${viteDevServerUrl}${config.base}${inputRelPath}`,
-          hash: null,
-        },
-      ],
+      [inputType]: [`${viteDevServerUrl}${config.base}${inputRelPath}`],
     };
   }
   return entryPoints;
+};
+
+export const getFilesMetadatas = (base: string, generatedFiles: GeneratedFiles): FilesMetadatas => {
+  return Object.fromEntries(
+    Object.values(generatedFiles)
+      .filter((fileInfos: FileInfos) => fileInfos.hash)
+      .map((fileInfos: FileInfos) => [
+        `${base}${fileInfos.outputRelPath}`,
+        {
+          hash: fileInfos.hash,
+        },
+      ]),
+  );
 };
 
 export const getBuildEntryPoints = (
@@ -71,11 +79,10 @@ export const resolveEntrypoint = (
   legacyEntryName: boolean | string,
   resolvedImportOutputRelPaths: string[] = [],
 ): EntryPoint => {
-  const assets: FileWithHash[] = [];
-  const css: FileWithHash[] = [];
-  const js: FileWithHash[] = [];
-  const preload: FileWithHash[] = [];
-  const dynamic: FileWithHash[] = [];
+  const css: string[] = [];
+  const js: string[] = [];
+  const preload: string[] = [];
+  const dynamic: string[] = [];
 
   resolvedImportOutputRelPaths.push(fileInfos.outputRelPath);
 
@@ -92,86 +99,60 @@ export const resolveEntrypoint = (
       }
 
       const {
-        assets: importAssets,
         css: importCss,
         dynamic: importDynamic,
         js: importJs,
         preload: importPreload,
       } = resolveEntrypoint(importFileInfos, generatedFiles, config, false, resolvedImportOutputRelPaths);
 
-      for (const dependencyWithHash of importCss) {
-        if (css.findIndex((file) => file.path === dependencyWithHash.path) === -1) {
-          css.push(dependencyWithHash);
+      for (const dependency of importCss) {
+        if (css.indexOf(dependency) === -1) {
+          css.push(dependency);
         }
       }
 
       // imports are preloaded not js files
-      for (const dependencyWithHash of importJs) {
-        if (preload.findIndex((file) => file.path === dependencyWithHash.path) === -1) {
-          preload.push(dependencyWithHash);
+      for (const dependency of importJs) {
+        if (preload.indexOf(dependency) === -1) {
+          preload.push(dependency);
         }
       }
-      for (const dependencyWithHash of importPreload) {
-        if (preload.findIndex((file) => file.path === dependencyWithHash.path) === -1) {
-          preload.push(dependencyWithHash);
+      for (const dependency of importPreload) {
+        if (preload.indexOf(dependency) === -1) {
+          preload.push(dependency);
         }
       }
-      for (const dependencyWithHash of importDynamic) {
-        if (dynamic.findIndex((file) => file.path === dependencyWithHash.path) === -1) {
-          dynamic.push(dependencyWithHash);
-        }
-      }
-      for (const dependencyWithHash of importAssets) {
-        if (assets.findIndex((file) => file.path === dependencyWithHash.path) === -1) {
-          assets.push(dependencyWithHash);
+      for (const dependency of importDynamic) {
+        if (dynamic.indexOf(dependency) === -1) {
+          dynamic.push(dependency);
         }
       }
     }
 
-    fileInfos.assets.forEach((dependency) => {
-      if (assets.findIndex((file) => file.path === dependency) === -1) {
-        assets.push({
-          path: `${config.base}${dependency}`,
-          hash: generatedFiles[dependency].hash,
-        });
-      }
-    });
     fileInfos.js.forEach((dependency) => {
-      if (js.findIndex((file) => file.path === dependency) === -1) {
-        js.push({
-          path: `${config.base}${dependency}`,
-          hash: generatedFiles[dependency].hash,
-        });
+      if (js.indexOf(dependency) === -1) {
+        js.push(`${config.base}${dependency}`);
       }
     });
     fileInfos.preload.forEach((dependency) => {
-      if (preload.findIndex((file) => file.path === dependency) === -1) {
-        preload.push({
-          path: `${config.base}${dependency}`,
-          hash: generatedFiles[dependency].hash,
-        });
+      if (preload.indexOf(dependency) === -1) {
+        preload.push(`${config.base}${dependency}`);
       }
     });
     fileInfos.dynamic.forEach((dependency) => {
-      if (dynamic.findIndex((file) => file.path === dependency) === -1) {
-        dynamic.push({
-          path: `${config.base}${dependency}`,
-          hash: generatedFiles[dependency].hash,
-        });
+      if (dynamic.indexOf(dependency) === -1) {
+        dynamic.push(`${config.base}${dependency}`);
       }
     });
   }
 
   if (fileInfos.type === "js" || fileInfos.type === "css") {
     fileInfos.css.forEach((dependency) => {
-      if (css.findIndex((file) => file.path === dependency) === -1) {
-        css.push({
-          path: `${config.base}${dependency}`,
-          hash: generatedFiles[dependency].hash,
-        });
+      if (css.indexOf(dependency) === -1) {
+        css.push(`${config.base}${dependency}`);
       }
     });
   }
 
-  return { assets, css, dynamic, js, legacy: legacyEntryName, preload };
+  return { css, dynamic, js, legacy: legacyEntryName, preload };
 };

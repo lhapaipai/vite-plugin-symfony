@@ -52,24 +52,19 @@ describe("vitePluginSymfony", () => {
       fileName: "entrypoints.json",
       source: JSON.stringify(
         {
+          base: "/build/",
           entryPoints: {
             welcome: {
-              assets: [],
               css: [],
               dynamic: [],
-              js: [
-                {
-                  path: "/build/assets/welcome-1e67239d.js",
-                  hash: null,
-                },
-              ],
+              js: ["/build/assets/welcome-1e67239d.js"],
               legacy: false,
               preload: [],
             },
           },
-          isBuild: true,
           legacy: false,
-          viteServer: false,
+          metadatas: {},
+          viteServer: null,
         },
         null,
         2,
@@ -98,24 +93,23 @@ describe("vitePluginSymfony", () => {
       fileName: "entrypoints.json",
       source: JSON.stringify(
         {
+          base: "/build/",
           entryPoints: {
             welcome: {
-              assets: [],
               css: [],
               dynamic: [],
-              js: [
-                {
-                  path: "/build/assets/welcome-1e67239d.js",
-                  hash: "sha256-w+Sit18/MC+LC1iX8MrNapOiCQ8wbPX8Rb6ErbfDX1Q=",
-                },
-              ],
+              js: ["/build/assets/welcome-1e67239d.js"],
               legacy: false,
               preload: [],
             },
           },
-          isBuild: true,
           legacy: false,
-          viteServer: false,
+          metadatas: {
+            "/build/assets/welcome-1e67239d.js": {
+              hash: "sha256-w+Sit18/MC+LC1iX8MrNapOiCQ8wbPX8Rb6ErbfDX1Q=",
+            },
+          },
+          viteServer: null,
         },
         null,
         2,
@@ -143,34 +137,19 @@ describe("vitePluginSymfony", () => {
       fileName: "entrypoints.json",
       source: JSON.stringify(
         {
+          base: "/build/",
           entryPoints: {
             pageAssets: {
-              assets: [
-                {
-                  path: "/build/assets/logo-d015cc3f.png",
-                  hash: null,
-                },
-              ],
-              css: [
-                {
-                  path: "/build/assets/index-aa7c8190.css",
-                  hash: null,
-                },
-              ],
+              css: ["/build/assets/index-aa7c8190.css"],
               dynamic: [],
-              js: [
-                {
-                  path: "/build/assets/pageAssets-05cfe79c.js",
-                  hash: null,
-                },
-              ],
+              js: ["/build/assets/pageAssets-05cfe79c.js"],
               legacy: false,
               preload: [],
             },
           },
-          isBuild: true,
           legacy: false,
-          viteServer: false,
+          metadatas: {},
+          viteServer: null,
         },
         null,
         2,
@@ -198,29 +177,19 @@ describe("vitePluginSymfony", () => {
       fileName: "entrypoints.json",
       source: JSON.stringify(
         {
+          base: "/build/",
           entryPoints: {
             pageImports: {
-              assets: [],
               css: [],
-              dynamic: [
-                {
-                  path: "/build/assets/async-dep-e2ac9f96.js",
-                  hash: null,
-                },
-              ],
-              js: [
-                {
-                  path: "/build/assets/pageImports-53eb9fd1.js",
-                  hash: null,
-                },
-              ],
+              dynamic: ["/build/assets/async-dep-e2ac9f96.js"],
+              js: ["/build/assets/pageImports-53eb9fd1.js"],
               legacy: false,
               preload: [],
             },
           },
-          isBuild: true,
           legacy: false,
-          viteServer: false,
+          metadatas: {},
+          viteServer: null,
         },
         null,
         2,
@@ -250,24 +219,19 @@ describe("vitePluginSymfony", () => {
       fileName: "entrypoints.json",
       source: JSON.stringify(
         {
+          base: "/build/",
           entryPoints: {
             theme: {
-              assets: [],
-              css: [
-                {
-                  path: "/build/assets/theme-44b5be96.css",
-                  hash: null,
-                },
-              ],
+              css: ["/build/assets/theme-44b5be96.css"],
               dynamic: [],
               js: [],
               legacy: false,
               preload: [],
             },
           },
-          isBuild: true,
           legacy: false,
-          viteServer: false,
+          metadatas: {},
+          viteServer: null,
         },
         null,
         2,
@@ -296,29 +260,19 @@ describe("vitePluginSymfony", () => {
       fileName: "entrypoints.json",
       source: JSON.stringify(
         {
+          base: "/build/",
           entryPoints: {
             circular: {
-              assets: [],
               css: [],
               dynamic: [],
-              js: [
-                {
-                  path: "/build/assets/circular1-56785678.js",
-                  hash: null,
-                },
-              ],
+              js: ["/build/assets/circular1-56785678.js"],
               legacy: false,
-              preload: [
-                {
-                  path: "/build/assets/circular2-12341234.js",
-                  hash: null,
-                },
-              ],
+              preload: ["/build/assets/circular2-12341234.js"],
             },
           },
-          isBuild: true,
           legacy: false,
-          viteServer: false,
+          metadatas: {},
+          viteServer: null,
         },
         null,
         2,
@@ -349,50 +303,33 @@ describe("vitePluginSymfony", () => {
       fileName: "entrypoints.json",
       source: JSON.stringify(
         {
+          base: "/build/",
           entryPoints: {
             "welcome-legacy": {
-              assets: [],
               css: [],
               dynamic: [],
-              js: [
-                {
-                  path: "/build/assets/welcome-legacy-64979d13.js",
-                  hash: null,
-                },
-              ],
+              js: ["/build/assets/welcome-legacy-64979d13.js"],
               legacy: false,
               preload: [],
             },
             welcome: {
-              assets: [],
               css: [],
               dynamic: [],
-              js: [
-                {
-                  path: "/build/assets/welcome-1e67239d.js",
-                  hash: null,
-                },
-              ],
+              js: ["/build/assets/welcome-1e67239d.js"],
               legacy: "welcome-legacy",
               preload: [],
             },
             "polyfills-legacy": {
-              assets: [],
               css: [],
               dynamic: [],
-              js: [
-                {
-                  path: "/build/assets/polyfills-legacy-40963d34.js",
-                  hash: null,
-                },
-              ],
+              js: ["/build/assets/polyfills-legacy-40963d34.js"],
               legacy: false,
               preload: [],
             },
           },
-          isBuild: true,
           legacy: true,
-          viteServer: false,
+          metadatas: {},
+          viteServer: null,
         },
         null,
         2,

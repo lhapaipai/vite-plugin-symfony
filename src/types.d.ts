@@ -16,13 +16,11 @@ export interface ChunkMetadata {
   importedCss: Set<string>;
 }
 
-export type FileWithHash = {
-  path: string;
+export type FileMetadatas = {
   hash: string | null;
 };
 
 export type EntryPointsFile = {
-  isBuild: boolean;
   viteServer:
     | {
         origin: string;
@@ -32,16 +30,22 @@ export type EntryPointsFile = {
   entryPoints: EntryPoints;
   assets: StringMapping;
   legacy: boolean;
+  metadatas: FileMetadatas;
+};
+
+export type FilesMetadatas = {
+  [k: string]: FileMetadatas;
 };
 
 export type EntryPoint = {
-  assets?: FileWithHash[];
-  js?: FileWithHash[];
-  css?: FileWithHash[];
-  preload?: FileWithHash[];
-  dynamic?: FileWithHash[];
+  assets?: string[];
+  js?: string[];
+  css?: string[];
+  preload?: string[];
+  dynamic?: string[];
   legacy?: boolean | string;
 };
+
 export type EntryPoints = {
   [k: string]: EntryPoint;
 };
