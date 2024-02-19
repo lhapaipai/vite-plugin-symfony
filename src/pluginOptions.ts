@@ -61,6 +61,7 @@ export function resolvePluginOptions(userConfig: Partial<VitePluginSymfonyOption
     sriAlgorithm: userConfig.sriAlgorithm ?? false,
     stimulus: userConfig.stimulus,
     viteDevServerHostname: userConfig.viteDevServerHostname ?? null,
+    emptyOutDir: userConfig.emptyOutDir ?? true,
   };
 }
 

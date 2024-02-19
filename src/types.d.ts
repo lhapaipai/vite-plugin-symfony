@@ -217,6 +217,12 @@ export type VitePluginSymfonyEntrypointsOptions = {
    * @default ["APP_ENV"]
    */
   exposedEnvVars: string[];
+
+  /**
+   * Prevent emptying outDir in dev mode
+   * @default true
+   */
+  emptyOutDir: boolean;
 };
 
 export type VitePluginSymfonyStimulusOptions = {

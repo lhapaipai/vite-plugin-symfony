@@ -167,7 +167,9 @@ export default function symfonyEntrypoints(pluginOptions: VitePluginSymfonyEntry
             mkdirSync(buildDir, { recursive: true });
           }
 
-          existsSync(buildDir) && emptyDir(buildDir);
+          if (pluginOptions.emptyOutDir) {
+            existsSync(buildDir) && emptyDir(buildDir);
+          }
 
           mkdirSync(viteDir, { recursive: true });
 
